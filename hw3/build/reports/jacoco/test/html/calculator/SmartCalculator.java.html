@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SmartCalculator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">hw3</a> &gt; <a href="index.source.html" class="el_package">calculator</a> &gt; <span class="el_source">SmartCalculator.java</span></div><h1>SmartCalculator.java</h1><pre class="source lang-java linenums">package calculator;
+
+/**
+ * This class implements a smarter immutable {@link Calculator} object. It has
+ * a field {@code currentlyEnteredSymbols} that stores the history of entered
+ * inputs, and has the ability to derive the result from that history in
+ * {@code getResult()}, and the ability to pass the history on to future
+ * instances, with a provided argument appended on, in {@code input()}. It can
+ * do more than the {@link SimpleCalculator} class, with more supported wrong
+ * input patterns.
+ */
+public class SmartCalculator extends AbstractCalculator {
+  /**
+   * Construct a new {@link SmartCalculator} object with an empty
+   * {@code currentResult} String.
+   */
+  public SmartCalculator() {
+<span class="nc" id="L18">    super();</span>
+<span class="nc" id="L19">  }</span>
+
+  // used to copy over the current object to a new one in input(), maintaining immutability
+  private SmartCalculator(String lastResult) {
+<span class="nc" id="L23">    super(lastResult);</span>
+<span class="nc" id="L24">  }</span>
+
+  @Override
+  protected AbstractCalculator of() {
+<span class="nc" id="L28">    return of(&quot;&quot;);</span>
+  }
+
+  @Override
+  protected AbstractCalculator of(String lastResult) {
+<span class="nc" id="L33">    return new SmartCalculator(lastResult);</span>
+  }
+
+  @Override
+  protected AbstractCalculator handleUnsupportedInputs(char argument, char lastChar) {
+    // check conditions specific to when nothing has been inputted yet (an empty result)
+<span class="nc bnc" id="L39" title="All 2 branches missed.">    if (currentlyEnteredSymbols.isEmpty()) {</span>
+      // now, CAN start with just one operator
+<span class="nc bnc" id="L41" title="All 2 branches missed.">      if (argument == '+') {</span>
+<span class="nc" id="L42">        System.out.println(&quot;The plus-sign operator is ignored at the start of an expression.&quot;);</span>
+<span class="nc" id="L43">        return this.of();</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">      } else if (OPERATORS.contains(argument)) {</span>
+<span class="nc" id="L45">        throw new IllegalArgumentException(&quot;Cannot start an expression with an operator.&quot;);</span>
+      }
+    } else {
+<span class="nc" id="L48">      String intermediateString = currentlyEnteredSymbols</span>
+<span class="nc" id="L49">              .substring(0, currentlyEnteredSymbols.length() - 1);</span>
+      // if both argument and last entered character are operators, ignore the previous
+<span class="nc bnc" id="L51" title="All 4 branches missed.">      if (OPERATORS.contains(argument) &amp;&amp; OPERATORS.contains(lastChar)) {</span>
+<span class="nc" id="L52">        System.out.println(&quot;With consecutive operators, only the latest one is counted.&quot;);</span>
+<span class="nc" id="L53">        return this.of(String.format(&quot;%s%s&quot;, intermediateString, argument));</span>
+      }
+    }
+    // if no condition is satisfied, ignore the return value with a null
+<span class="nc" id="L57">    return null;</span>
+  }
+
+  private String getActualCurrentSymbols(String currentlyEnteredSymbols) {
+     /* numerical arguments' size now same as operator arguments size WITHOUT EQUALS SIGNS,
+       because currently calculated result takes care of the first number, and the ending
+       equals sign is taken care of during splitting. to take care of equals signs, though,
+       an approach must be developed to allow for us to properly process multiple equals
+       signs. here are the cases we must address:
+
+       [
+
+       0. a sole equals sign followed by an operator, which should be allowed, and the
+          lone equals sign case is never encountered thanks to the input() method
+          EDIT: this will automatically be accounted for in handleSymbolsAfterEqualsSigns()
+
+                                                                                           ]
+
+       1. many equals signs following a number, in which case they should be ignored,
+          i.e. &quot;123====&quot; should become &quot;123&quot; -&gt; DONE
+       2. many equals signs following an operator right after a number, in which case
+          that operator should be continuously applied to that number on itself, if alone,
+          i.e. &quot;23 + ===&quot; should become &quot;23 + 23 + 23 + 23&quot;
+       3. many equals signs following an operator right after a number that is the last
+          operand in a series of other numbers, in which case the cumulative result should
+          have the operator repeatedly applied on that last operand to the cumulative
+          result, i.e. &quot;24 + 32 ===&quot; should be &quot;24 + (32 + 32 + 32)&quot;
+
+       the question arises, which case to prioritize amongst 2 and 3 if ambiguity between
+       the two is presented? the choice that we make here is simple, that 2 dominates 3,
+       i.e. &quot;24 + 32 - 44 * ===&quot; becomes &quot;(24 + 32 - 44) * ... * ... * (24 + 32 - 44)&quot;
+
+       next, we must also account for the discrepancy between the sizes of the numerical
+       and operator argument lists' sizes now; we must pause when reaching an equals sign
+       and deal with the above cases before then continuing to increment the argument */
+<span class="nc" id="L92">    StringBuilder newSymbols = new StringBuilder();</span>
+<span class="nc" id="L93">    String intermediateSymbols = new StringBuilder(currentlyEnteredSymbols).toString();</span>
+<span class="nc" id="L94">    char[] interSymbols = intermediateSymbols.toCharArray();</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">    for (int i = 0; i &lt; interSymbols.length; i++) {</span>
+<span class="nc" id="L96">      char currentSymbol = interSymbols[i];</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">      if (NUMBERS.contains(currentSymbol)) {</span>
+<span class="nc" id="L98">        newSymbols.append(currentSymbol);</span>
+      }
+<span class="nc bnc" id="L100" title="All 2 branches missed.">      char nextSymbol = (i + 1 &lt; interSymbols.length) ? interSymbols[i + 1] : (char) 0;</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">      if (OPERATORS.contains(currentSymbol)) {</span>
+<span class="nc" id="L102">        StringBuilder prevNumberReverse = new StringBuilder();</span>
+        String prevNumber;
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        if (nextSymbol == EQUALS_CHARACTER) {</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">          for (int j = i - 1; j &gt;= 0; j--) {</span>
+<span class="nc" id="L106">            char possiblePrevNumber = interSymbols[j];</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">            if (NUMBERS.contains(possiblePrevNumber)) {</span>
+<span class="nc" id="L108">              prevNumberReverse.append(possiblePrevNumber);</span>
+            } else {
+              break;
+            }
+          }
+<span class="nc" id="L113">          prevNumber = prevNumberReverse.reverse().toString();</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">          for (int k = i + 1; k &lt; interSymbols.length; k++) {</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">            if (interSymbols[k] == EQUALS_CHARACTER) {</span>
+<span class="nc" id="L116">              newSymbols.append(currentSymbol);</span>
+<span class="nc" id="L117">              newSymbols.append(prevNumber);</span>
+            } else {
+              break;
+            }
+          }
+        }
+<span class="nc bnc" id="L123" title="All 2 branches missed.">        if (NUMBERS.contains(nextSymbol)) {</span>
+<span class="nc" id="L124">          StringBuilder nextNum = new StringBuilder();</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">          for (int l = i + 1; l &lt; interSymbols.length; l++) {</span>
+<span class="nc" id="L126">            char nextNumberOrEquals = interSymbols[l];</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">            if (NUMBERS.contains(nextNumberOrEquals)) {</span>
+<span class="nc" id="L128">              nextNum.append(nextNumberOrEquals);</span>
+            } else {
+<span class="nc bnc" id="L130" title="All 2 branches missed.">              if (nextNumberOrEquals == EQUALS_CHARACTER) {</span>
+<span class="nc bnc" id="L131" title="All 4 branches missed.">                if (l + 1 &lt; interSymbols.length</span>
+                        &amp;&amp; interSymbols[l + 1] == EQUALS_CHARACTER) {
+<span class="nc bnc" id="L133" title="All 2 branches missed.">                  for (int m = i + 1; m &lt; interSymbols.length; m++) {</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">                    if (interSymbols[m] == EQUALS_CHARACTER) {</span>
+<span class="nc" id="L135">                      newSymbols.append(currentSymbol);</span>
+<span class="nc" id="L136">                      newSymbols.append(nextNum);</span>
+                    } else {
+                      break;
+                    }
+                  }
+                }
+              }
+              break;
+            }
+          }
+        }
+<span class="nc" id="L147">        newSymbols.append(currentSymbol);</span>
+      }
+<span class="nc bnc" id="L149" title="All 2 branches missed.">      if (currentSymbol == EQUALS_CHARACTER) {</span>
+<span class="nc bnc" id="L150" title="All 4 branches missed.">        if (i == interSymbols.length - 1 || i == currentlyEnteredSymbols.lastIndexOf('=')) {</span>
+<span class="nc" id="L151">          newSymbols.append(currentSymbol);</span>
+        }
+      }
+    }
+<span class="nc" id="L155">    return newSymbols.toString();</span>
+  }
+
+  @Override
+  public String getResult() {
+<span class="nc" id="L160">    return new SimpleCalculator().of(getActualCurrentSymbols(currentlyEnteredSymbols)).getResult();</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

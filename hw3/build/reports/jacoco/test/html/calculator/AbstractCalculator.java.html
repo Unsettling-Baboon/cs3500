@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractCalculator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">hw3</a> &gt; <a href="index.source.html" class="el_package">calculator</a> &gt; <span class="el_source">AbstractCalculator.java</span></div><h1>AbstractCalculator.java</h1><pre class="source lang-java linenums">package calculator;
+
+import java.util.List;
+
+/**
+ * A class that factors out common elements of both the
+ * {@link SimpleCalculator} and {@link SmartCalculator} classes.
+ */
+public abstract class AbstractCalculator implements Calculator {
+  // define meaningfully named constants
+<span class="nc" id="L11">  protected static final List&lt;Character&gt; POSSIBLE_CHARACTERS = List.of(</span>
+<span class="nc" id="L12">          '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-', '*', '=', 'C', 'Q'</span>
+  );
+<span class="nc" id="L14">  protected static final List&lt;Character&gt; NUMBERS = POSSIBLE_CHARACTERS.subList(0, 10);</span>
+<span class="nc" id="L15">  protected static final List&lt;Character&gt; OPERATORS = POSSIBLE_CHARACTERS.subList(10, 13);</span>
+<span class="nc" id="L16">  protected static final char EQUALS_CHARACTER = POSSIBLE_CHARACTERS.get(13);</span>
+<span class="nc" id="L17">  protected static final char CLEAR_CHARACTER = POSSIBLE_CHARACTERS.get(14);</span>
+  // define a field to store the currently entered numbers and operators
+  protected final String currentlyEnteredSymbols;
+
+  /**
+   * Construct a new {@code Calculator} object with an empty {@code
+   * currentlyEnteredSymbols} field.
+   */
+  protected AbstractCalculator() {
+<span class="nc" id="L26">    this(&quot;&quot;);</span>
+<span class="nc" id="L27">  }</span>
+
+  // used to copy over the current object to a new one in input(), maintaining immutability
+<span class="nc" id="L30">  protected AbstractCalculator(String lastResult) {</span>
+<span class="nc" id="L31">    currentlyEnteredSymbols = lastResult;</span>
+<span class="nc" id="L32">  }</span>
+
+  /**
+   * An instance factory method for copying over the current object to maintain
+   * immutability, left abstract for allowing refactoring of code in the
+   * {@code input()} method.
+   *
+   * @return an empty instance of this class that extends {@link AbstractCalculator}
+   */
+  protected abstract AbstractCalculator of();
+
+  /**
+   * An instance factory method for copying over the current object to maintain
+   * immutability, left abstract for allowing refactoring of code in the
+   * {@code input()} method.
+   *
+   * @param result the result to copy over to the next object
+   * @return       an instance of this class that extends {@link AbstractCalculator}
+   *               with the {@code result}
+   */
+  protected abstract AbstractCalculator of(String result);
+
+  @Override
+  public Calculator input(char argument) {
+    // before anything, if it's 'C', clear the result, as this would have no restrictions
+<span class="nc bnc" id="L57" title="All 2 branches missed.">    if (argument == CLEAR_CHARACTER) {</span>
+<span class="nc" id="L58">      return this.of();</span>
+    }
+    // regardless of anything else, a non-arithmetic symbol cannot be entered
+<span class="nc bnc" id="L61" title="All 2 branches missed.">    if (!POSSIBLE_CHARACTERS.contains(argument)) {</span>
+<span class="nc" id="L62">      throw new IllegalArgumentException(&quot;Can only enter numbers or arithmetic operators.&quot;);</span>
+    }
+    // find last character in currently entered symbols
+<span class="nc" id="L65">    char lastCharacterInResult = getLastCharacterInResult();</span>
+    // perform checks specific to if the currently entered symbols aren't empty
+<span class="nc bnc" id="L67" title="All 2 branches missed.">    if (!currentlyEnteredSymbols.isEmpty()) {</span>
+      // protect from overflow
+<span class="nc" id="L69">      protectFromOverflow(argument, lastCharacterInResult);</span>
+      // if the last character is an equals sign and argument is a number, move on
+<span class="nc bnc" id="L71" title="All 4 branches missed.">      if (lastCharacterInResult == EQUALS_CHARACTER &amp;&amp; NUMBERS.contains(argument)) {</span>
+<span class="nc" id="L72">        return this.of(String.valueOf(argument));</span>
+      }
+    }
+    // check that inputs follow guidelines specific to this calculator
+<span class="nc" id="L76">    AbstractCalculator potentialReturnValue = handleUnsupportedInputs(</span>
+            argument, lastCharacterInResult
+    );
+    // if everything goes well, return the input appended to this calculator
+<span class="nc bnc" id="L80" title="All 2 branches missed.">    return (potentialReturnValue != null) ?</span>
+<span class="nc" id="L81">            potentialReturnValue :</span>
+<span class="nc" id="L82">            this.of(String.format(&quot;%s%s&quot;, currentlyEnteredSymbols, argument));</span>
+  }
+
+  // input() helper method 1
+  protected char getLastCharacterInResult() {
+<span class="nc bnc" id="L87" title="All 2 branches missed.">    return (!currentlyEnteredSymbols.isEmpty())</span>
+<span class="nc" id="L88">            ? currentlyEnteredSymbols.toCharArray()[currentlyEnteredSymbols.length() - 1]</span>
+<span class="nc" id="L89">            : (char) 0;</span>
+  }
+
+  // input() helper method 2
+  protected void protectFromOverflow(char argument, char lastCharacterInResult) {
+    // if it's a number and argument's a number, make sure no overflow occurs
+<span class="nc bnc" id="L95" title="All 4 branches missed.">    if (NUMBERS.contains(argument) &amp;&amp; NUMBERS.contains(lastCharacterInResult)) {</span>
+      // find the last entered number, and find what it could be by parsing a long from it
+<span class="nc" id="L97">      String[] numericalArguments = currentlyEnteredSymbols.split(&quot;[-+*=]+&quot;);</span>
+<span class="nc" id="L98">      String lastEnteredNumber = numericalArguments[numericalArguments.length - 1];</span>
+<span class="nc" id="L99">      String lastNumberWithInput = String.format(&quot;%s%s&quot;, lastEnteredNumber, argument);</span>
+<span class="nc" id="L100">      long potentiallyLong = Long.parseLong(lastNumberWithInput);</span>
+      // if it is indeed too large, throw an exception
+<span class="nc bnc" id="L102" title="All 2 branches missed.">      if (potentiallyLong &gt; Integer.MAX_VALUE) {</span>
+<span class="nc" id="L103">        throw new IllegalArgumentException(&quot;Input makes previously &quot;</span>
+                + &quot;inputted number too large.&quot;);
+      }
+    }
+<span class="nc" id="L107">  }</span>
+
+  // input() helper method 3
+  protected abstract AbstractCalculator handleUnsupportedInputs(char argument, char lastChar);
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

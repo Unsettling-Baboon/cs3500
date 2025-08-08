@@ -1,0 +1,888 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CalendarImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">hw6</a> &gt; <a href="index.source.html" class="el_package">model.calendar</a> &gt; <span class="el_source">CalendarImpl.java</span></div><h1>CalendarImpl.java</h1><pre class="source lang-java linenums">package model.calendar;
+
+import java.time.DateTimeException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+import model.events.CalEventImpl;
+import model.events.RobustCalEvent;
+import model.events.ZonedCalEventImpl;
+
+/**
+ * An implementation of a robust calendar that offers not only the option
+ * to create events but also to edit them, as well as the option to query
+ * this calendar.
+ */
+public class CalendarImpl implements RobustCalendar {
+  private final Set&lt;RobustCalEvent&gt; events;
+  private String name;
+  private ZoneId zone;
+
+  /**
+   * Construct a new calendar object with empty event and event series sets
+   * and no time zone.
+   */
+  public CalendarImpl() {
+<span class="nc" id="L34">    this(null, null);</span>
+<span class="nc" id="L35">  }</span>
+
+  /**
+   * Construct a new calendar object with empty event and event series sets
+   * and an immutable time zone.
+   *
+   * @param zone a provided time zone.
+   */
+<span class="fc" id="L43">  public CalendarImpl(String name, String zone) {</span>
+<span class="fc" id="L44">    events = new TreeSet&lt;&gt;();</span>
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">    this.zone = (zone != null) ? ZoneId.of(zone) : null;</span>
+<span class="fc" id="L46">    this.name = name;</span>
+<span class="fc" id="L47">  }</span>
+
+  @Override
+  public Set&lt;RobustCalEvent&gt; getEvents() {
+<span class="fc" id="L51">    return events;</span>
+  }
+
+  @Override
+  public String getName() {
+<span class="fc" id="L56">    return name;</span>
+  }
+
+  @Override
+  public String getZone() {
+<span class="fc" id="L61">    return zone.toString();</span>
+  }
+
+  @Override
+  public void setName(String name) {
+<span class="fc" id="L66">    this.name = name;</span>
+<span class="fc" id="L67">  }</span>
+
+  @Override
+  public void setZone(String zone) {
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">    this.zone = (zone != null) ? ZoneId.of(zone) : null;</span>
+<span class="fc" id="L72">  }</span>
+
+  @Override
+  public void createSingleNormalEvent(
+          String eventSubject,
+          String fromDateStringTtimeString,
+          String toDateStringTtimeString
+  ) {
+<span class="fc" id="L80">    events.add(</span>
+<span class="fc" id="L81">            createOneNormalEvent(</span>
+                    eventSubject,
+                    fromDateStringTtimeString,
+                    toDateStringTtimeString
+            )
+    );
+<span class="fc" id="L87">  }</span>
+
+  private RobustCalEvent createOneNormalEvent(
+          String eventSubject,
+          String fromDateStringTtimeString,
+          String toDateStringTtimeString
+  ) {
+<span class="fc" id="L94">    return new CalEventImpl(</span>
+            eventSubject,
+<span class="fc" id="L96">            LocalDateTime.parse(fromDateStringTtimeString),</span>
+<span class="fc" id="L97">            LocalDateTime.parse(toDateStringTtimeString)</span>
+    );
+  }
+
+  @Override
+  public void createRecurringNormalEventsNTimes(
+          String eventSubject,
+          String fromDateStringTtimeString,
+          String toDateStringTtimeString,
+          String repeatWeekdays,
+          int N
+  ) {
+    // if N is 0 or 1, do one event creation only
+<span class="nc bnc" id="L110" title="All 4 branches missed.">    if (N == 0 || N == 1) {</span>
+<span class="nc" id="L111">      createSingleNormalEvent(eventSubject, fromDateStringTtimeString, toDateStringTtimeString);</span>
+    }
+    // define the new series
+<span class="nc" id="L114">    RobustCalEvent.Series newSeries = new RobustCalEvent.Series();</span>
+    // get starting data
+<span class="nc" id="L116">    if (LocalDateTime.parse(fromDateStringTtimeString).toLocalDate().getDayOfMonth() !=</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">            LocalDateTime.parse(toDateStringTtimeString).toLocalDate().getDayOfMonth()</span>
+    ) {
+<span class="nc" id="L119">      throw new DateTimeException(&quot;Cannot repeat an event that doesn't end on &quot; +</span>
+              &quot;the same day it starts on!&quot;);
+    }
+<span class="nc" id="L122">    RobustCalEvent firstEvent = createOneNormalEvent(</span>
+            eventSubject, fromDateStringTtimeString, toDateStringTtimeString
+    );
+<span class="nc" id="L125">    firstEvent.setSeries(newSeries);</span>
+<span class="nc" id="L126">    newSeries.add(firstEvent);</span>
+    // retrieve the weekdays
+<span class="nc bnc" id="L128" title="All 2 branches missed.">    for (char weekday : repeatWeekdays.toCharArray()) {</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">      if (!CalEventImpl.getDaysOfTheWeek().containsKey(weekday)) {</span>
+<span class="nc" id="L130">        throw new DateTimeException(&quot;Invalid weekday letters entered! &quot; +</span>
+                &quot;'M' is Monday, 'T' is Tuesday, 'W' is Wednesday, 'R' is Thursday, &quot; +
+                &quot;'F' is Friday, 'S' is Saturday, and 'U' is Sunday.&quot;
+        );
+      }
+    }
+    /* cases for weekdays:
+     *  1. weekdays are after the current one, in which case in the first
+     *     iteration we can continue as wanted
+     *  2. weekdays are BEFORE the current one, in which case in the first
+     *     iteration we can continue with the OTHER weekdays, BUT ADD them
+     *     from the NEXT iteration onward */
+    // create a wrapper class version of the repeated weekdays
+<span class="nc" id="L143">    Character[] weekdays = new Character[repeatWeekdays.length()];</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">    for (int i = 0; i &lt; repeatWeekdays.length(); i++) {</span>
+<span class="nc" id="L145">      weekdays[i] = repeatWeekdays.toCharArray()[i];</span>
+    }
+    // store the days of the week
+<span class="nc" id="L148">    DayOfWeek[] repeatDaysOfWeek = Arrays.stream(weekdays)</span>
+<span class="nc" id="L149">            .map(CalEventImpl.getDaysOfTheWeek()::get)</span>
+<span class="nc" id="L150">            .toArray(DayOfWeek[]::new);</span>
+    // find the offset from the day of the week of the first day
+<span class="nc" id="L152">    int firstEventDayOfWeekNum = firstEvent</span>
+<span class="nc" id="L153">            .getStartDateTime().toLocalDate().getDayOfWeek().ordinal();</span>
+<span class="nc" id="L154">    Integer[] dayOfWeekOffset = Arrays.stream(repeatDaysOfWeek)</span>
+<span class="nc" id="L155">            .map((it) -&gt; it.ordinal() - firstEventDayOfWeekNum)</span>
+<span class="nc" id="L156">            .toArray(Integer[]::new);</span>
+    /* plan:
+     *  1. find the first iteration of the dates, keeping in mind the two cases
+     *     defined above
+     *     a. if they're after, just add the days and create the date
+     *     b. if they're before, add 7 to the ordinal difference and create that
+     *        event, that many days after
+     *  2. then, for a total of N times, create days that mirror these events on
+     *     the specified days of the week, adding seven days to the date */
+    // define an ordered collection of all the events
+<span class="nc" id="L166">    Set&lt;RobustCalEvent&gt; allFirstEvents = new TreeSet&lt;&gt;();</span>
+    // define auxiliary before and after events data structures
+<span class="nc" id="L168">    List&lt;RobustCalEvent&gt; beforeFirstEvents = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L169">    List&lt;RobustCalEvent&gt; afterFirstEvents = new ArrayList&lt;&gt;();</span>
+    // define data structures of the non-0 offsets for repeating events on certain days
+<span class="nc" id="L171">    Integer[] beforeOffsets = Arrays.stream(dayOfWeekOffset)</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">            .filter((it) -&gt; it &lt; 0)</span>
+<span class="nc" id="L173">            .map((it) -&gt; it + 7)</span>
+<span class="nc" id="L174">            .toArray(Integer[]::new);</span>
+<span class="nc" id="L175">    Integer[] afterOffsets = Arrays.stream(dayOfWeekOffset)</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">            .filter((it) -&gt; it &gt;= 0)</span>
+<span class="nc" id="L177">            .toArray(Integer[]::new);</span>
+    // create these relevant repeating events' first iterations
+<span class="nc" id="L179">    createWeekdayRepeatNormalEvents(eventSubject, firstEvent, beforeFirstEvents, beforeOffsets);</span>
+<span class="nc" id="L180">    createWeekdayRepeatNormalEvents(eventSubject, firstEvent, afterFirstEvents, afterOffsets);</span>
+    // add these first iterations to the set of all first events
+<span class="nc" id="L182">    allFirstEvents.addAll(beforeFirstEvents);</span>
+<span class="nc" id="L183">    allFirstEvents.addAll(afterFirstEvents);</span>
+    // now, create the new events to add a total of N times
+<span class="nc" id="L185">    RobustCalEvent[] allFirstEventsArray = allFirstEvents.toArray(RobustCalEvent[]::new);</span>
+<span class="nc" id="L186">    int i = 0;</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">    while (newSeries.getEvents().size() &lt; N) {</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">      for (RobustCalEvent event : allFirstEventsArray) {</span>
+<span class="nc" id="L189">        RobustCalEvent newEvent = new CalEventImpl(</span>
+                eventSubject,
+<span class="nc" id="L191">                LocalDateTime.of(</span>
+<span class="nc" id="L192">                        LocalDate.ofEpochDay(</span>
+<span class="nc" id="L193">                                event.getStartDateTime().toLocalDate().toEpochDay()</span>
+                                        + 7L * i
+<span class="nc" id="L195">                        ), event.getStartDateTime().toLocalTime()</span>
+                ),
+<span class="nc" id="L197">                LocalDateTime.of(</span>
+<span class="nc" id="L198">                        LocalDate.ofEpochDay(</span>
+<span class="nc" id="L199">                                event.getEndDateTime().toLocalDate().toEpochDay()</span>
+                                        + 7L * i
+<span class="nc" id="L201">                        ), event.getEndDateTime().toLocalTime()</span>
+                )
+        );
+<span class="nc bnc" id="L204" title="All 2 branches missed.">        if (newSeries.getEvents().size() &lt; N) {</span>
+<span class="nc" id="L205">          newEvent.setSeries(newSeries);</span>
+<span class="nc" id="L206">          newSeries.add(newEvent);</span>
+        } else {
+          break;
+        }
+      }
+<span class="nc" id="L211">      i++;</span>
+    }
+    // finally, store all the events in the calendar's events field
+<span class="nc" id="L214">    events.addAll(newSeries.getEvents());</span>
+<span class="nc" id="L215">  }</span>
+
+  @Override
+  public void createRecurringNormalEventsUntilDate(
+          String eventSubject,
+          String fromDateStringTtimeString,
+          String toDateStringTtimeString,
+          String repeatWeekdays,
+          String untilDateString
+  ) {
+    // calculate an undershot (for safety) amount of weeks to repeat the event
+<span class="nc" id="L226">    LocalDate untilDate = LocalDate.parse(untilDateString);</span>
+<span class="nc" id="L227">    int times = Math.toIntExact(</span>
+            (int) (
+<span class="nc" id="L229">                    untilDate.toEpochDay()</span>
+<span class="nc" id="L230">                            - LocalDateTime.parse(fromDateStringTtimeString)</span>
+<span class="nc" id="L231">                            .toLocalDate().toEpochDay()</span>
+            ) / 7
+    );
+    // define the new series
+<span class="nc" id="L235">    RobustCalEvent.Series newSeries = new RobustCalEvent.Series();</span>
+    // get starting data
+<span class="nc" id="L237">    if (LocalDateTime.parse(fromDateStringTtimeString).toLocalDate().getDayOfMonth() !=</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">            LocalDateTime.parse(toDateStringTtimeString).toLocalDate().getDayOfMonth()</span>
+    ) {
+<span class="nc" id="L240">      throw new DateTimeException(&quot;Cannot repeat an event that doesn't end on &quot; +</span>
+              &quot;the same day it starts on!&quot;);
+    }
+<span class="nc" id="L243">    RobustCalEvent firstEvent = createOneNormalEvent(</span>
+            eventSubject, fromDateStringTtimeString, toDateStringTtimeString
+    );
+<span class="nc" id="L246">    firstEvent.setSeries(newSeries);</span>
+<span class="nc" id="L247">    newSeries.add(firstEvent);</span>
+    // retrieve the weekdays
+<span class="nc bnc" id="L249" title="All 2 branches missed.">    for (char weekday : repeatWeekdays.toCharArray()) {</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">      if (!CalEventImpl.getDaysOfTheWeek().containsKey(weekday)) {</span>
+<span class="nc" id="L251">        throw new DateTimeException(&quot;Invalid weekday letters entered!&quot;);</span>
+      }
+    }
+    /* cases for weekdays:
+     *  1. weekdays are after the current one, in which case in the first
+     *     iteration we can continue as wanted
+     *  2. weekdays are BEFORE the current one, in which case in the first
+     *     iteration we can continue with the OTHER weekdays, BUT ADD them
+     *     from the NEXT iteration onward */
+    // create a wrapper class version of the repeated weekdays
+<span class="nc" id="L261">    Character[] weekdays = new Character[repeatWeekdays.length()];</span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">    for (int i = 0; i &lt; repeatWeekdays.length(); i++) {</span>
+<span class="nc" id="L263">      weekdays[i] = repeatWeekdays.toCharArray()[i];</span>
+    }
+    // store the days of the week
+<span class="nc" id="L266">    DayOfWeek[] repeatDaysOfWeek = Arrays.stream(weekdays)</span>
+<span class="nc" id="L267">            .map(CalEventImpl.getDaysOfTheWeek()::get)</span>
+<span class="nc" id="L268">            .toArray(DayOfWeek[]::new);</span>
+    // find the offset from the day of the week of the first day
+<span class="nc" id="L270">    int firstEventDayOfWeekNum = firstEvent</span>
+<span class="nc" id="L271">            .getStartDateTime().toLocalDate().getDayOfWeek().ordinal();</span>
+<span class="nc" id="L272">    Integer[] dayOfWeekOffset = Arrays.stream(repeatDaysOfWeek)</span>
+<span class="nc" id="L273">            .map((it) -&gt; it.ordinal() - firstEventDayOfWeekNum)</span>
+<span class="nc" id="L274">            .toArray(Integer[]::new);</span>
+    /* plan:
+     *  1. find the first iteration of the dates, keeping in mind the two cases
+     *     defined above
+     *     a. if they're after, just add the days and create the date
+     *     b. if they're before, add 7 to the ordinal difference and create that
+     *        event, that many days after
+     *  2. then, for a total of N times, create days that mirror these events on
+     *     the specified days of the week, adding seven days to the date */
+    // define an ordered collection of all the events
+<span class="nc" id="L284">    Set&lt;RobustCalEvent&gt; allFirstEvents = new TreeSet&lt;&gt;();</span>
+    // define auxiliary before and after events data structures
+<span class="nc" id="L286">    List&lt;RobustCalEvent&gt; beforeFirstEvents = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L287">    List&lt;RobustCalEvent&gt; afterFirstEvents = new ArrayList&lt;&gt;();</span>
+    // define data structures of the non-0 offsets for repeating events on certain days
+<span class="nc" id="L289">    Integer[] beforeOffsets = Arrays.stream(dayOfWeekOffset)</span>
+<span class="nc bnc" id="L290" title="All 2 branches missed.">            .filter((it) -&gt; it &lt; 0)</span>
+<span class="nc" id="L291">            .map((it) -&gt; it + 7)</span>
+<span class="nc" id="L292">            .toArray(Integer[]::new);</span>
+<span class="nc" id="L293">    Integer[] afterOffsets = Arrays.stream(dayOfWeekOffset)</span>
+<span class="nc bnc" id="L294" title="All 2 branches missed.">            .filter((it) -&gt; it &gt;= 0)</span>
+<span class="nc" id="L295">            .toArray(Integer[]::new);</span>
+    // create these relevant repeating events' first iterations
+<span class="nc" id="L297">    createWeekdayRepeatNormalEvents(eventSubject, firstEvent, beforeFirstEvents, beforeOffsets);</span>
+<span class="nc" id="L298">    createWeekdayRepeatNormalEvents(eventSubject, firstEvent, afterFirstEvents, afterOffsets);</span>
+    // add these first iterations to the set of all first events
+<span class="nc" id="L300">    allFirstEvents.addAll(beforeFirstEvents);</span>
+<span class="nc" id="L301">    allFirstEvents.addAll(afterFirstEvents);</span>
+    // add these first iterations of the new events to the series
+<span class="nc bnc" id="L303" title="All 2 branches missed.">    if (times &lt;= 1) {</span>
+<span class="nc bnc" id="L304" title="All 2 branches missed.">      for (RobustCalEvent event : allFirstEvents) {</span>
+<span class="nc bnc" id="L305" title="All 2 branches missed.">        if (event.getStartDateTime().toLocalDate().isBefore(untilDate)) {</span>
+<span class="nc" id="L306">          event.setSeries(newSeries);</span>
+<span class="nc" id="L307">          newSeries.add(event);</span>
+        } else {
+          break;
+        }
+<span class="nc" id="L311">      }</span>
+      // quit preliminarily again if N is near 1
+<span class="nc" id="L313">      return;</span>
+    } else {
+<span class="nc" id="L315">      newSeries.addAll(allFirstEvents);</span>
+    }
+    // now, create the new events to add a total of N times
+<span class="nc bnc" id="L318" title="All 2 branches missed.">    for (RobustCalEvent event : allFirstEvents) {</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">      for (int i = 1; i &lt;= times; i++) {</span>
+<span class="nc" id="L320">        RobustCalEvent newEvent = new CalEventImpl(</span>
+                eventSubject,
+<span class="nc" id="L322">                LocalDateTime.of(</span>
+<span class="nc" id="L323">                        LocalDate.ofEpochDay(</span>
+<span class="nc" id="L324">                                event.getStartDateTime().toLocalDate().toEpochDay()</span>
+                                        + 7L * i
+<span class="nc" id="L326">                        ), event.getStartDateTime().toLocalTime()</span>
+                ),
+<span class="nc" id="L328">                LocalDateTime.of(</span>
+<span class="nc" id="L329">                        LocalDate.ofEpochDay(</span>
+<span class="nc" id="L330">                                event.getEndDateTime().toLocalDate().toEpochDay()</span>
+                                        + 7L * i
+<span class="nc" id="L332">                        ), event.getEndDateTime().toLocalTime()</span>
+                )
+        );
+<span class="nc bnc" id="L335" title="All 2 branches missed.">        if (i == times) {</span>
+<span class="nc bnc" id="L336" title="All 2 branches missed.">          if (newEvent.getStartDateTime().toLocalDate().isBefore(untilDate)) {</span>
+<span class="nc" id="L337">            newEvent.setSeries(newSeries);</span>
+<span class="nc" id="L338">            newSeries.add(newEvent);</span>
+          }
+        } else {
+<span class="nc" id="L341">          newEvent.setSeries(newSeries);</span>
+<span class="nc" id="L342">          newSeries.add(newEvent);</span>
+        }
+      }
+<span class="nc" id="L345">    }</span>
+    // finally, store all the events in the calendar's events field
+<span class="nc" id="L347">    events.addAll(newSeries.getEvents());</span>
+<span class="nc" id="L348">  }</span>
+
+  private void createWeekdayRepeatNormalEvents(
+          String eventSubject,
+          RobustCalEvent firstEvent,
+          List&lt;RobustCalEvent&gt; firstEvents,
+          Integer[] offsets
+  ) {
+<span class="nc bnc" id="L356" title="All 2 branches missed.">    for (int offset : offsets) {</span>
+<span class="nc" id="L357">      RobustCalEvent newEvent = new CalEventImpl(</span>
+              eventSubject,
+<span class="nc" id="L359">              LocalDateTime.of(</span>
+<span class="nc" id="L360">                      LocalDate.ofEpochDay(</span>
+<span class="nc" id="L361">                              firstEvent.getStartDateTime().toLocalDate().toEpochDay()</span>
+                                      + offset
+<span class="nc" id="L363">                      ), firstEvent.getStartDateTime().toLocalTime()</span>
+              ),
+<span class="nc" id="L365">              LocalDateTime.of(</span>
+<span class="nc" id="L366">                      LocalDate.ofEpochDay(</span>
+<span class="nc" id="L367">                              firstEvent.getEndDateTime().toLocalDate().toEpochDay()</span>
+                                      + offset
+<span class="nc" id="L369">                      ), firstEvent.getEndDateTime().toLocalTime()</span>
+              )
+      );
+<span class="nc" id="L372">      firstEvents.add(newEvent);</span>
+    }
+<span class="nc" id="L374">  }</span>
+
+  @Override
+  public void createSingleAllDayEvent(String eventSubject, String dateString) {
+<span class="fc" id="L378">    events.add(createOneAllDayEvent(eventSubject, dateString));</span>
+<span class="fc" id="L379">  }</span>
+
+  private RobustCalEvent createOneAllDayEvent(String eventSubject, String dateString) {
+<span class="fc" id="L382">    return new CalEventImpl(eventSubject, LocalDate.parse(dateString));</span>
+  }
+
+  @Override
+  public void createRecurringAllDayEventsNTimes(
+          String eventSubject,
+          String dateString,
+          String repeatWeekdays,
+          int N
+  ) {
+    // if N is 0 or 1, do one event creation only
+<span class="nc bnc" id="L393" title="All 4 branches missed.">    if (N == 0 || N == 1) {</span>
+<span class="nc" id="L394">      createSingleAllDayEvent(eventSubject, dateString);</span>
+    }
+    // define the new series
+<span class="nc" id="L397">    RobustCalEvent.Series newSeries = new RobustCalEvent.Series();</span>
+    // get starting data
+<span class="nc" id="L399">    RobustCalEvent firstEvent = createOneAllDayEvent(eventSubject, dateString);</span>
+<span class="nc" id="L400">    firstEvent.setSeries(newSeries);</span>
+<span class="nc" id="L401">    newSeries.add(firstEvent);</span>
+    // retrieve the weekdays
+<span class="nc bnc" id="L403" title="All 2 branches missed.">    for (char weekday : repeatWeekdays.toCharArray()) {</span>
+<span class="nc bnc" id="L404" title="All 2 branches missed.">      if (!CalEventImpl.getDaysOfTheWeek().containsKey(weekday)) {</span>
+<span class="nc" id="L405">        throw new DateTimeException(&quot;Invalid weekday letters entered!&quot;);</span>
+      }
+    }
+    /* cases for weekdays:
+     *  1. weekdays are after the current one, in which case in the first
+     *     iteration we can continue as wanted
+     *  2. weekdays are BEFORE the current one, in which case in the first
+     *     iteration we can continue with the OTHER weekdays, BUT ADD them
+     *     from the NEXT iteration onward */
+    // create a wrapper class version of the repeated weekdays
+<span class="nc" id="L415">    Character[] weekdays = new Character[repeatWeekdays.length()];</span>
+<span class="nc bnc" id="L416" title="All 2 branches missed.">    for (int i = 0; i &lt; repeatWeekdays.length(); i++) {</span>
+<span class="nc" id="L417">      weekdays[i] = repeatWeekdays.toCharArray()[i];</span>
+    }
+    // store the days of the week
+<span class="nc" id="L420">    DayOfWeek[] repeatDaysOfWeek = Arrays.stream(weekdays)</span>
+<span class="nc" id="L421">            .map(CalEventImpl.getDaysOfTheWeek()::get)</span>
+<span class="nc" id="L422">            .toArray(DayOfWeek[]::new);</span>
+    // find the offset from the day of the week of the first day
+<span class="nc" id="L424">    int firstEventDayOfWeekNum = firstEvent</span>
+<span class="nc" id="L425">            .getStartDateTime().toLocalDate().getDayOfWeek().ordinal();</span>
+<span class="nc" id="L426">    Integer[] dayOfWeekOffset = Arrays.stream(repeatDaysOfWeek)</span>
+<span class="nc" id="L427">            .map((it) -&gt; it.ordinal() - firstEventDayOfWeekNum)</span>
+<span class="nc" id="L428">            .toArray(Integer[]::new);</span>
+    /* plan:
+     *  1. find the first iteration of the dates, keeping in mind the two cases
+     *     defined above
+     *     a. if they're after, just add the days and create the date
+     *     b. if they're before, add 7 to the ordinal difference and create that
+     *        event, that many days after
+     *  2. then, for a total of N times, create days that mirror these events on
+     *     the specified days of the week, adding seven days to the date */
+    // define an ordered collection of all the events
+<span class="nc" id="L438">    Set&lt;RobustCalEvent&gt; allFirstEvents = new TreeSet&lt;&gt;();</span>
+    // define auxiliary before and after events data structures
+<span class="nc" id="L440">    List&lt;RobustCalEvent&gt; beforeFirstEvents = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L441">    List&lt;RobustCalEvent&gt; afterFirstEvents = new ArrayList&lt;&gt;();</span>
+    // define data structures of the non-0 offsets for repeating events on certain days
+<span class="nc" id="L443">    Integer[] beforeOffsets = Arrays.stream(dayOfWeekOffset)</span>
+<span class="nc bnc" id="L444" title="All 2 branches missed.">            .filter((it) -&gt; it &lt; 0)</span>
+<span class="nc" id="L445">            .map((it) -&gt; it + 7)</span>
+<span class="nc" id="L446">            .toArray(Integer[]::new);</span>
+<span class="nc" id="L447">    Integer[] afterOffsets = Arrays.stream(dayOfWeekOffset)</span>
+<span class="nc bnc" id="L448" title="All 2 branches missed.">            .filter((it) -&gt; it &gt;= 0)</span>
+<span class="nc" id="L449">            .toArray(Integer[]::new);</span>
+    // create these relevant repeating events' first iterations
+<span class="nc" id="L451">    createWeekdayRepeatNormalEvents(eventSubject, firstEvent, beforeFirstEvents, beforeOffsets);</span>
+<span class="nc" id="L452">    createWeekdayRepeatNormalEvents(eventSubject, firstEvent, afterFirstEvents, afterOffsets);</span>
+    // add these first iterations to the set of all first events
+<span class="nc" id="L454">    allFirstEvents.addAll(beforeFirstEvents);</span>
+<span class="nc" id="L455">    allFirstEvents.addAll(afterFirstEvents);</span>
+    // now, create the new events to add a total of N times
+<span class="nc" id="L457">    RobustCalEvent[] allFirstEventsArray = allFirstEvents.toArray(RobustCalEvent[]::new);</span>
+<span class="nc" id="L458">    int i = 0;</span>
+<span class="nc bnc" id="L459" title="All 2 branches missed.">    while (newSeries.getEvents().size() &lt; N) {</span>
+<span class="nc bnc" id="L460" title="All 2 branches missed.">      for (RobustCalEvent event : allFirstEventsArray) {</span>
+<span class="nc" id="L461">        RobustCalEvent newEvent = new CalEventImpl(</span>
+                eventSubject,
+<span class="nc" id="L463">                LocalDate.ofEpochDay(</span>
+<span class="nc" id="L464">                        event.getStartDateTime().toLocalDate().toEpochDay()</span>
+                                + 7L * i
+                )
+        );
+<span class="nc bnc" id="L468" title="All 2 branches missed.">        if (newSeries.getEvents().size() &lt; N) {</span>
+<span class="nc" id="L469">          newEvent.setSeries(newSeries);</span>
+<span class="nc" id="L470">          newSeries.add(newEvent);</span>
+        } else {
+          break;
+        }
+      }
+<span class="nc" id="L475">      i++;</span>
+    }
+    // finally, store all the events in the calendar's events field
+<span class="nc" id="L478">    events.addAll(newSeries.getEvents());</span>
+<span class="nc" id="L479">  }</span>
+
+  @Override
+  public void createRecurringAllDayEventsUntilDate(
+          String eventSubject,
+          String dateString,
+          String repeatWeekdays,
+          String untilDateString
+  ) {
+    // calculate undershot (for safety) amount of weeks to repeat the event
+<span class="nc" id="L489">    LocalDate untilDate = LocalDate.parse(untilDateString);</span>
+<span class="nc" id="L490">    int times = Math.toIntExact(</span>
+            (int) (
+<span class="nc" id="L492">                    untilDate.toEpochDay() - LocalDate.parse(dateString).toEpochDay()</span>
+            ) / 7
+    );
+    // define the new series
+<span class="nc" id="L496">    RobustCalEvent.Series newSeries = new RobustCalEvent.Series();</span>
+    // get starting data
+<span class="nc" id="L498">    RobustCalEvent firstEvent = createOneAllDayEvent(eventSubject, dateString);</span>
+<span class="nc" id="L499">    firstEvent.setSeries(newSeries);</span>
+<span class="nc" id="L500">    newSeries.add(firstEvent);</span>
+    // retrieve the weekdays
+<span class="nc bnc" id="L502" title="All 2 branches missed.">    for (char weekday : repeatWeekdays.toCharArray()) {</span>
+<span class="nc bnc" id="L503" title="All 2 branches missed.">      if (!CalEventImpl.getDaysOfTheWeek().containsKey(weekday)) {</span>
+<span class="nc" id="L504">        throw new DateTimeException(&quot;Invalid weekday letters entered!&quot;);</span>
+      }
+    }
+    /* cases for weekdays:
+     *  1. weekdays are after the current one, in which case in the first
+     *     iteration we can continue as wanted
+     *  2. weekdays are BEFORE the current one, in which case in the first
+     *     iteration we can continue with the OTHER weekdays, BUT ADD them
+     *     from the NEXT iteration onward */
+    // create a wrapper class version of the repeated weekdays
+<span class="nc" id="L514">    Character[] weekdays = new Character[repeatWeekdays.length()];</span>
+<span class="nc bnc" id="L515" title="All 2 branches missed.">    for (int i = 0; i &lt; repeatWeekdays.length(); i++) {</span>
+<span class="nc" id="L516">      weekdays[i] = repeatWeekdays.toCharArray()[i];</span>
+    }
+    // store the days of the week
+<span class="nc" id="L519">    DayOfWeek[] repeatDaysOfWeek = Arrays.stream(weekdays)</span>
+<span class="nc" id="L520">            .map(CalEventImpl.getDaysOfTheWeek()::get)</span>
+<span class="nc" id="L521">            .toArray(DayOfWeek[]::new);</span>
+    // find the offset from the day of the week of the first day
+<span class="nc" id="L523">    int firstEventDayOfWeekNum = firstEvent</span>
+<span class="nc" id="L524">            .getStartDateTime().toLocalDate().getDayOfWeek().ordinal();</span>
+<span class="nc" id="L525">    Integer[] dayOfWeekOffset = Arrays.stream(repeatDaysOfWeek)</span>
+<span class="nc" id="L526">            .map((it) -&gt; it.ordinal() - firstEventDayOfWeekNum)</span>
+<span class="nc" id="L527">            .toArray(Integer[]::new);</span>
+    /* plan:
+     *  1. find the first iteration of the dates, keeping in mind the two cases
+     *     defined above
+     *     a. if they're after, just add the days and create the date
+     *     b. if they're before, add 7 to the ordinal difference and create that
+     *        event, that many days after
+     *  2. then, for a total of N times, create days that mirror these events on
+     *     the specified days of the week, adding seven days to the date */
+    // define an ordered collection of all the events
+<span class="nc" id="L537">    Set&lt;RobustCalEvent&gt; allFirstEvents = new TreeSet&lt;&gt;();</span>
+    // define auxiliary before and after events data structures
+<span class="nc" id="L539">    List&lt;RobustCalEvent&gt; beforeFirstEvents = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L540">    List&lt;RobustCalEvent&gt; afterFirstEvents = new ArrayList&lt;&gt;();</span>
+    // define data structures of the non-0 offsets for repeating events on certain days
+<span class="nc" id="L542">    Integer[] beforeOffsets = Arrays.stream(dayOfWeekOffset)</span>
+<span class="nc bnc" id="L543" title="All 2 branches missed.">            .filter((it) -&gt; it &lt; 0)</span>
+<span class="nc" id="L544">            .map((it) -&gt; it + 7)</span>
+<span class="nc" id="L545">            .toArray(Integer[]::new);</span>
+<span class="nc" id="L546">    Integer[] afterOffsets = Arrays.stream(dayOfWeekOffset)</span>
+<span class="nc bnc" id="L547" title="All 2 branches missed.">            .filter((it) -&gt; it &gt;= 0)</span>
+<span class="nc" id="L548">            .toArray(Integer[]::new);</span>
+    // create these relevant repeating events' first iterations
+<span class="nc" id="L550">    createWeekdayRepeatAllDayEvents(eventSubject, firstEvent, beforeFirstEvents, beforeOffsets);</span>
+<span class="nc" id="L551">    createWeekdayRepeatAllDayEvents(eventSubject, firstEvent, afterFirstEvents, afterOffsets);</span>
+    // add these first iterations to the set of all first events
+<span class="nc" id="L553">    allFirstEvents.addAll(beforeFirstEvents);</span>
+<span class="nc" id="L554">    allFirstEvents.addAll(afterFirstEvents);</span>
+    // add these first iterations of the new events to the series
+<span class="nc bnc" id="L556" title="All 2 branches missed.">    if (times &lt;= 1) {</span>
+<span class="nc bnc" id="L557" title="All 2 branches missed.">      for (RobustCalEvent event : allFirstEvents) {</span>
+<span class="nc bnc" id="L558" title="All 2 branches missed.">        if (event.getStartDateTime().toLocalDate().isBefore(untilDate)) {</span>
+<span class="nc" id="L559">          event.setSeries(newSeries);</span>
+<span class="nc" id="L560">          newSeries.add(event);</span>
+        } else {
+          break;
+        }
+<span class="nc" id="L564">      }</span>
+      // quit preliminarily again if N is near 1
+<span class="nc" id="L566">      return;</span>
+    } else {
+<span class="nc" id="L568">      newSeries.addAll(allFirstEvents);</span>
+    }
+    // now, create the new events to add a total of N times
+<span class="nc bnc" id="L571" title="All 2 branches missed.">    for (RobustCalEvent event : allFirstEvents) {</span>
+<span class="nc bnc" id="L572" title="All 2 branches missed.">      for (int i = 1; i &lt;= times; i++) {</span>
+<span class="nc" id="L573">        RobustCalEvent newEvent = new CalEventImpl(</span>
+                eventSubject,
+<span class="nc" id="L575">                LocalDate.ofEpochDay(</span>
+<span class="nc" id="L576">                        event.getStartDateTime().toLocalDate().toEpochDay()</span>
+                                + 7L * i
+                )
+        );
+<span class="nc bnc" id="L580" title="All 2 branches missed.">        if (i == times) {</span>
+<span class="nc bnc" id="L581" title="All 2 branches missed.">          if (newEvent.getStartDateTime().toLocalDate().isBefore(untilDate)) {</span>
+<span class="nc" id="L582">            event.setSeries(newSeries);</span>
+<span class="nc" id="L583">            newSeries.add(newEvent);</span>
+          }
+        } else {
+<span class="nc" id="L586">          event.setSeries(newSeries);</span>
+<span class="nc" id="L587">          newSeries.add(newEvent);</span>
+        }
+      }
+<span class="nc" id="L590">    }</span>
+    // finally, store all the events in the calendar's events field
+<span class="nc" id="L592">    events.addAll(newSeries.getEvents());</span>
+<span class="nc" id="L593">  }</span>
+
+  private void createWeekdayRepeatAllDayEvents(
+          String eventSubject,
+          RobustCalEvent firstEvent,
+          List&lt;RobustCalEvent&gt; firstEvents,
+          Integer[] offsets
+  ) {
+<span class="nc bnc" id="L601" title="All 2 branches missed.">    for (int offset : offsets) {</span>
+<span class="nc" id="L602">      RobustCalEvent newEvent = new CalEventImpl(</span>
+              eventSubject,
+<span class="nc" id="L604">              LocalDate.ofEpochDay(</span>
+<span class="nc" id="L605">                      firstEvent.getStartDateTime().toLocalDate().toEpochDay()</span>
+                              + offset
+              )
+      );
+<span class="nc" id="L609">      firstEvents.add(newEvent);</span>
+    }
+<span class="nc" id="L611">  }</span>
+
+  @Override
+  public void editSingleEvent(
+          String property,
+          String eventSubject,
+          String fromDateStringTtimeString,
+          String toDateStringTtimeString,
+          String newPropertyVal
+  ) {
+    // ensure the event set isn't empty
+<span class="nc bnc" id="L622" title="All 2 branches missed.">    if (events.isEmpty()) {</span>
+<span class="nc" id="L623">      throw new IllegalStateException(&quot;No events to pick from to edit!&quot;);</span>
+    }
+    // find the target event, if any
+<span class="nc" id="L626">    RobustCalEvent targetEvent = events.stream()</span>
+<span class="nc" id="L627">            .filter(</span>
+                    (it) -&gt;
+<span class="nc bnc" id="L629" title="All 2 branches missed.">                            it.getSubject().equals(eventSubject)</span>
+<span class="nc bnc" id="L630" title="All 2 branches missed.">                                    &amp;&amp; it.getStartDateTime().equals(</span>
+<span class="nc" id="L631">                                    LocalDateTime.parse(fromDateStringTtimeString)</span>
+                            )
+<span class="nc bnc" id="L633" title="All 2 branches missed.">                                    &amp;&amp; it.getEndDateTime().equals(</span>
+<span class="nc" id="L634">                                    LocalDateTime.parse(toDateStringTtimeString)</span>
+                            )
+            )
+<span class="nc" id="L637">            .findFirst()</span>
+<span class="nc" id="L638">            .orElse(null);</span>
+    // ensure the target event is not null, then do the corresponding action
+<span class="nc bnc" id="L640" title="All 2 branches missed.">    if (targetEvent != null) {</span>
+<span class="nc bnc" id="L641" title="All 7 branches missed.">      switch (property) {</span>
+<span class="nc" id="L642">        case &quot;subject&quot; -&gt; targetEvent.setSubject(newPropertyVal);</span>
+        case &quot;start&quot; -&gt; {
+<span class="nc" id="L644">          targetEvent.setStartDateTime(newPropertyVal);</span>
+<span class="nc bnc" id="L645" title="All 2 branches missed.">          if (targetEvent.getSeries() != null) {</span>
+<span class="nc" id="L646">            targetEvent.getSeries().remove(targetEvent);</span>
+<span class="nc" id="L647">            targetEvent.setSeries(null);</span>
+          }
+        }
+        case &quot;end&quot; -&gt; {
+<span class="nc" id="L651">          targetEvent.setEndDateTime(newPropertyVal);</span>
+<span class="nc bnc" id="L652" title="All 2 branches missed.">          if (targetEvent.getSeries() != null) {</span>
+<span class="nc" id="L653">            targetEvent.getSeries().remove(targetEvent);</span>
+<span class="nc" id="L654">            targetEvent.setSeries(null);</span>
+          }
+        }
+<span class="nc" id="L657">        case &quot;description&quot; -&gt; targetEvent.setDescription(newPropertyVal);</span>
+<span class="nc" id="L658">        case &quot;location&quot; -&gt; targetEvent.setLocation(newPropertyVal);</span>
+<span class="nc" id="L659">        case &quot;status&quot; -&gt; targetEvent.setStatus(newPropertyVal);</span>
+        // if the specified property doesn't exist, throw relevant exception
+<span class="nc" id="L661">        default -&gt; throw new IllegalArgumentException(&quot;No properties match the one passed!&quot;);</span>
+<span class="nc" id="L662">      }</span>
+      // if no event was found, throw relevant exception
+    } else {
+<span class="nc" id="L665">      throw new IllegalArgumentException(&quot;No events match the provided subject and/or times!&quot;);</span>
+    }
+<span class="nc" id="L667">  }</span>
+
+  @Override
+  public void editEventAndMaybeOnward(
+          String property,
+          String eventSubject,
+          String fromDateStringTtimeString,
+          String newPropertyVal
+  ) {
+    // ensure the event set isn't empty
+<span class="nc bnc" id="L677" title="All 2 branches missed.">    if (events.isEmpty()) {</span>
+<span class="nc" id="L678">      throw new IllegalStateException(&quot;No events to pick from to edit!&quot;);</span>
+    }
+    // find the target event, if any
+<span class="nc" id="L681">    RobustCalEvent targetEvent = events.stream()</span>
+<span class="nc" id="L682">            .filter(</span>
+                    (it) -&gt;
+<span class="nc bnc" id="L684" title="All 2 branches missed.">                            it.getSubject().equals(eventSubject)</span>
+<span class="nc bnc" id="L685" title="All 2 branches missed.">                                    &amp;&amp; it.getStartDateTime().equals(</span>
+<span class="nc" id="L686">                                    LocalDateTime.parse(fromDateStringTtimeString)</span>
+                            )
+            )
+<span class="nc" id="L689">            .findFirst()</span>
+<span class="nc" id="L690">            .orElse(null);</span>
+    // ensure the target event is not null, then do the corresponding action
+<span class="nc bnc" id="L692" title="All 2 branches missed.">    if (targetEvent != null) {</span>
+<span class="nc bnc" id="L693" title="All 7 branches missed.">      switch (property) {</span>
+<span class="nc" id="L694">        case &quot;subject&quot; -&gt; targetEvent.setSubject(newPropertyVal);</span>
+        case &quot;start&quot; -&gt; {
+<span class="nc" id="L696">          targetEvent.setStartDateTime(newPropertyVal);</span>
+<span class="nc bnc" id="L697" title="All 2 branches missed.">          if (targetEvent.getSeries() != null) {</span>
+<span class="nc" id="L698">            targetEvent.getSeries().remove(targetEvent);</span>
+<span class="nc" id="L699">            targetEvent.setSeries(null);</span>
+          }
+        }
+        case &quot;end&quot; -&gt; {
+<span class="nc" id="L703">          targetEvent.setEndDateTime(newPropertyVal);</span>
+<span class="nc bnc" id="L704" title="All 2 branches missed.">          if (targetEvent.getSeries() != null) {</span>
+<span class="nc" id="L705">            targetEvent.getSeries().remove(targetEvent);</span>
+<span class="nc" id="L706">            targetEvent.setSeries(null);</span>
+          }
+        }
+<span class="nc" id="L709">        case &quot;description&quot; -&gt; targetEvent.setDescription(newPropertyVal);</span>
+<span class="nc" id="L710">        case &quot;location&quot; -&gt; targetEvent.setLocation(newPropertyVal);</span>
+<span class="nc" id="L711">        case &quot;status&quot; -&gt; targetEvent.setStatus(newPropertyVal);</span>
+        // if the specified property doesn't exist, throw relevant exception
+<span class="nc" id="L713">        default -&gt; throw new IllegalArgumentException(&quot;No properties match the one passed!&quot;);</span>
+<span class="nc" id="L714">      }</span>
+      // if no event was found, throw relevant exception
+    } else {
+<span class="nc" id="L717">      throw new IllegalArgumentException(&quot;No events match the provided subject and/or times!&quot;);</span>
+    }
+    // find whether the current event is in a series
+<span class="nc bnc" id="L720" title="All 2 branches missed.">    if (targetEvent.getSeries() != null) {</span>
+      // if so, create a new series and separate from the old one, if property was start/end
+<span class="nc" id="L722">      RobustCalEvent.Series newSeries = null;</span>
+<span class="nc bnc" id="L723" title="All 4 branches missed.">      if (property.equals(&quot;start&quot;) || property.equals(&quot;end&quot;)) {</span>
+<span class="nc" id="L724">        newSeries = new RobustCalEvent.Series();</span>
+<span class="nc" id="L725">        targetEvent.setSeries(newSeries);</span>
+<span class="nc" id="L726">        newSeries.add(targetEvent);</span>
+      }
+      // store the target series as an iterable list
+<span class="nc" id="L729">      List&lt;RobustCalEvent&gt; targetSeries =</span>
+<span class="nc" id="L730">              new ArrayList&lt;&gt;(targetEvent.getSeries().getEvents().stream().toList());</span>
+      // find the index of the target event, then only iterate from there on out
+<span class="nc" id="L732">      final int startingIndex = targetSeries.indexOf(targetEvent);</span>
+<span class="nc bnc" id="L733" title="All 2 branches missed.">      for (int i = startingIndex + 1; i &lt; targetSeries.size(); i++) {</span>
+<span class="nc" id="L734">        RobustCalEvent currentEvent = targetSeries.get(i);</span>
+<span class="nc" id="L735">        String currentSubject = currentEvent.getSubject();</span>
+<span class="nc" id="L736">        String currentStart = currentEvent.getStartDateTime().toString();</span>
+<span class="nc" id="L737">        String currentEnd = currentEvent.getEndDateTime().toString();</span>
+<span class="nc" id="L738">        editSingleEvent(property, currentSubject, currentStart, currentEnd, newPropertyVal);</span>
+        // again, ensure that new series actions are only carried out when property is start/end
+<span class="nc bnc" id="L740" title="All 4 branches missed.">        if (property.equals(&quot;start&quot;) || property.equals(&quot;end&quot;)) {</span>
+<span class="nc" id="L741">          currentEvent.setSeries(newSeries);</span>
+<span class="nc" id="L742">          newSeries.add(currentEvent);</span>
+        }
+      }
+    }
+<span class="nc" id="L746">  }</span>
+
+  @Override
+  public void editEventAndMaybeAll(
+          String property,
+          String eventSubject,
+          String fromDateStringTtimeString,
+          String newPropertyVal
+  ) {
+    // ensure the event set isn't empty
+<span class="nc bnc" id="L756" title="All 2 branches missed.">    if (events.isEmpty()) {</span>
+<span class="nc" id="L757">      throw new IllegalStateException(&quot;No events to pick from to edit!&quot;);</span>
+    }
+    // find the target event, if any
+<span class="nc" id="L760">    RobustCalEvent targetEvent = events.stream()</span>
+<span class="nc" id="L761">            .filter(</span>
+                    (it) -&gt;
+<span class="nc bnc" id="L763" title="All 2 branches missed.">                            it.getSubject().equals(eventSubject)</span>
+<span class="nc bnc" id="L764" title="All 2 branches missed.">                                    &amp;&amp; it.getStartDateTime().equals(</span>
+<span class="nc" id="L765">                                    LocalDateTime.parse(fromDateStringTtimeString)</span>
+                            )
+            )
+<span class="nc" id="L768">            .findFirst()</span>
+<span class="nc" id="L769">            .orElse(null);</span>
+    /* carry out series editing first; no new series needed as that'd be redundant
+     * when all elements in this series would be edited and added to another one which
+     * still contains the same events as before, just edited */
+<span class="nc bnc" id="L773" title="All 2 branches missed.">    if (targetEvent != null) {</span>
+<span class="nc bnc" id="L774" title="All 2 branches missed.">      if (targetEvent.getSeries() != null) {</span>
+<span class="nc bnc" id="L775" title="All 2 branches missed.">        for (RobustCalEvent event : targetEvent.getSeries().getEvents()) {</span>
+<span class="nc bnc" id="L776" title="All 7 branches missed.">          switch (property) {</span>
+<span class="nc" id="L777">            case &quot;subject&quot; -&gt; event.setSubject(newPropertyVal);</span>
+<span class="nc" id="L778">            case &quot;start&quot; -&gt; event.setStartDateTime(newPropertyVal);</span>
+<span class="nc" id="L779">            case &quot;end&quot; -&gt; event.setEndDateTime(newPropertyVal);</span>
+<span class="nc" id="L780">            case &quot;description&quot; -&gt; event.setDescription(newPropertyVal);</span>
+<span class="nc" id="L781">            case &quot;location&quot; -&gt; event.setLocation(newPropertyVal);</span>
+<span class="nc" id="L782">            case &quot;status&quot; -&gt; event.setStatus(newPropertyVal);</span>
+            // if the specified property doesn't exist, throw relevant exception
+<span class="nc" id="L784">            default -&gt; throw new IllegalArgumentException(&quot;No properties match the one passed!&quot;);</span>
+          }
+<span class="nc" id="L786">        }</span>
+        // if not part of a series, simply do single event editing
+      } else {
+<span class="nc" id="L789">        editSingleEvent(</span>
+                property,
+                eventSubject,
+                fromDateStringTtimeString,
+<span class="nc" id="L793">                targetEvent.getEndDateTime().toString(),</span>
+                newPropertyVal
+        );
+      }
+    }
+<span class="nc" id="L798">  }</span>
+
+  @Override
+  public List&lt;RobustCalEvent&gt; printAllEventsOnDate(String dateString) {
+    // create a list of the events
+<span class="fc" id="L803">    List&lt;RobustCalEvent&gt; events = new ArrayList&lt;&gt;();</span>
+    // retrieve the start and end date times of the date
+<span class="fc" id="L805">    LocalDateTime startDateTime = LocalDateTime.of(</span>
+<span class="fc" id="L806">            LocalDate.parse(dateString),</span>
+<span class="fc" id="L807">            LocalTime.of(LocalTime.MIN.getHour(), LocalTime.MIN.getMinute())</span>
+    );
+<span class="fc" id="L809">    LocalDateTime endDateTime = LocalDateTime.of(</span>
+<span class="fc" id="L810">            LocalDate.parse(dateString),</span>
+<span class="fc" id="L811">            LocalTime.of(LocalTime.MAX.getHour(), LocalTime.MAX.getMinute())</span>
+    );
+    // iterate over the event set
+<span class="fc" id="L814">    eventPrintingHelper(startDateTime, endDateTime, events);</span>
+    // return the events satisfying the conditions
+<span class="fc" id="L816">    return events;</span>
+  }
+
+  @Override
+  public List&lt;RobustCalEvent&gt; printAllEventsBetweenDates(
+          String fromDateStringTtimeString,
+          String toDateStringTtimeString
+  ) {
+    // create a list of the events
+<span class="fc" id="L825">    List&lt;RobustCalEvent&gt; events = new ArrayList&lt;&gt;();</span>
+    // retrieve the start and end date times of the date
+<span class="fc" id="L827">    LocalDateTime startDateTime = LocalDateTime.parse(</span>
+            fromDateStringTtimeString
+    );
+<span class="fc" id="L830">    LocalDateTime endDateTime = LocalDateTime.parse(</span>
+            toDateStringTtimeString
+    );
+    // iterate over the event set
+<span class="fc" id="L834">    eventPrintingHelper(startDateTime, endDateTime, events);</span>
+<span class="fc" id="L835">    return events;</span>
+  }
+
+  private void eventPrintingHelper(
+          LocalDateTime startDateTime,
+          LocalDateTime endDateTime,
+          List&lt;RobustCalEvent&gt; events
+  ) {
+<span class="fc bfc" id="L843" title="All 2 branches covered.">    for (RobustCalEvent event : getEvents()) {</span>
+      // retrieve the event's starting and ending dates and times
+<span class="fc" id="L845">      LocalDateTime eventStartDateTime = event.getStartDateTime();</span>
+<span class="fc" id="L846">      LocalDateTime eventEndDateTime = event.getEndDateTime();</span>
+      /* condition checks separated for proper ability to check */
+      // first condition: start before but end during day
+<span class="pc bpc" id="L849" title="1 of 2 branches missed.">      boolean condition1 = eventEndDateTime.isAfter(startDateTime) &amp;&amp;</span>
+<span class="fc bfc" id="L850" title="All 2 branches covered.">              eventEndDateTime.isBefore(endDateTime);</span>
+      // second condition: start and end within day itself
+<span class="pc bpc" id="L852" title="1 of 2 branches missed.">      boolean condition2 = eventStartDateTime.isAfter(startDateTime) &amp;&amp;</span>
+<span class="fc bfc" id="L853" title="All 2 branches covered.">              eventEndDateTime.isBefore(endDateTime);</span>
+      // third condition: start during but end after day
+<span class="pc bpc" id="L855" title="1 of 2 branches missed.">      boolean condition3 = eventStartDateTime.isAfter(startDateTime) &amp;&amp;</span>
+<span class="fc bfc" id="L856" title="All 2 branches covered.">              eventStartDateTime.isBefore(endDateTime);</span>
+      // put conditions all together
+<span class="pc bpc" id="L858" title="2 of 6 branches missed.">      if (condition1 || condition2 || condition3) {</span>
+<span class="fc" id="L859">        events.add(new ZonedCalEventImpl(event, zone));</span>
+      }
+<span class="fc" id="L861">    }</span>
+<span class="fc" id="L862">  }</span>
+
+  @Override
+  public String showStatusOnDateAtTime(String dateStringTtimeString) {
+<span class="nc" id="L866">    LocalDateTime targetTime = LocalDateTime.parse(dateStringTtimeString);</span>
+<span class="nc bnc" id="L867" title="All 2 branches missed.">    for (RobustCalEvent event : getEvents()) {</span>
+      // retrieve the event's starting and ending dates and times
+<span class="nc" id="L869">      LocalDateTime startDateTime = event.getStartDateTime();</span>
+<span class="nc" id="L870">      LocalDateTime endDateTime = event.getEndDateTime();</span>
+      // check whether the target time is within an event's time
+<span class="nc bnc" id="L872" title="All 2 branches missed.">      if (targetTime.isAfter(startDateTime) &amp;&amp;</span>
+<span class="nc bnc" id="L873" title="All 2 branches missed.">              targetTime.isBefore(endDateTime)</span>
+      ) {
+<span class="nc" id="L875">        return &quot;busy&quot;;</span>
+      }
+<span class="nc" id="L877">    }</span>
+<span class="nc" id="L878">    return &quot;available&quot;;</span>
+  }
+
+  @Override
+  public boolean equals(Object other) {
+<span class="nc" id="L883">    return this == other</span>
+<span class="nc bnc" id="L884" title="All 4 branches missed.">            || other instanceof RobustCalendar r</span>
+<span class="nc bnc" id="L885" title="All 2 branches missed.">            &amp;&amp; getName().equals(r.getName());</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

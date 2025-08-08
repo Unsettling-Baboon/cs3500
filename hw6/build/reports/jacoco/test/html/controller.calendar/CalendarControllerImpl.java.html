@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CalendarControllerImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">hw6</a> &gt; <a href="index.source.html" class="el_package">controller.calendar</a> &gt; <span class="el_source">CalendarControllerImpl.java</span></div><h1>CalendarControllerImpl.java</h1><pre class="source lang-java linenums">package controller.calendar;
+
+import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Scanner;
+import java.util.function.Function;
+
+import model.calendar.RobustCalendar;
+import controller.commands.calendar.CreateRecurringAllDayEventsNTimes;
+import controller.commands.calendar.CreateRecurringAllDayEventsUntilDate;
+import controller.commands.calendar.CreateRecurringNormalEventsNTimes;
+import controller.commands.calendar.CreateRecurringNormalEventsUntilDate;
+import controller.commands.calendar.CreateSingleAllDayEvent;
+import controller.commands.calendar.CreateSingleNormalEvent;
+import controller.commands.calendar.EditEventAndMaybeAll;
+import controller.commands.calendar.EditEventAndMaybeOnward;
+import controller.commands.calendar.EditSingleEvent;
+import controller.commands.calendar.PrintAllEventsBetweenDates;
+import controller.commands.calendar.PrintAllEventsOnDate;
+import controller.commands.calendar.ShowStatusOnDateAtTime;
+
+public class CalendarControllerImpl implements CalendarController {
+  private final Readable input;
+  private final Scanner in;
+  private final Appendable out;
+  private final RobustCalendar m;
+  protected final Map&lt;Function&lt;String, Boolean&gt;,
+          Function&lt;String, Function&lt;RobustCalendar, Function&lt;Appendable, Void&gt;&gt;&gt;&gt; commands;
+
+  public CalendarControllerImpl(
+          Readable in,
+          Appendable out,
+          RobustCalendar m
+<span class="nc" id="L36">  ) {</span>
+<span class="nc" id="L37">    this.input = in;</span>
+<span class="nc" id="L38">    this.in = new Scanner(in);</span>
+<span class="nc" id="L39">    this.out = out;</span>
+<span class="nc" id="L40">    this.m = m;</span>
+<span class="nc" id="L41">    commands = putCalCommands();</span>
+<span class="nc" id="L42">  }</span>
+
+  protected Map&lt;Function&lt;String, Boolean&gt;,
+          Function&lt;String, Function&lt;RobustCalendar, Function&lt;Appendable, Void&gt;&gt;&gt;&gt; putCalCommands()
+  {
+    final Map&lt;Function&lt;String, Boolean&gt;,
+            Function&lt;String, Function&lt;RobustCalendar, Function&lt;Appendable, Void&gt;&gt;&gt;&gt; commands;
+<span class="nc" id="L49">    commands = new LinkedHashMap&lt;&gt;(</span>
+<span class="nc" id="L50">            Map.of(</span>
+<span class="nc" id="L51">                    &quot;print menu&quot;::equals, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L54">                        printMenu();</span>
+<span class="nc" id="L55">                      } catch (IOException e) {</span>
+<span class="nc" id="L56">                        throw new RuntimeException(e);</span>
+<span class="nc" id="L57">                      }</span>
+<span class="nc" id="L58">                      return null;</span>
+                    },
+<span class="nc" id="L60">                    CreateSingleNormalEvent::matches, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L63">                        CreateSingleNormalEvent.perform(p, r, o);</span>
+<span class="nc" id="L64">                      } catch (IOException i) {</span>
+<span class="nc" id="L65">                        throw new IllegalArgumentException(i.getMessage());</span>
+<span class="nc" id="L66">                      }</span>
+<span class="nc" id="L67">                      return null;</span>
+                    },
+<span class="nc" id="L69">                    CreateRecurringNormalEventsNTimes::matches, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L72">                        CreateRecurringNormalEventsNTimes.perform(p, r, o);</span>
+<span class="nc" id="L73">                      } catch (IOException i) {</span>
+<span class="nc" id="L74">                        throw new IllegalArgumentException(i.getMessage());</span>
+<span class="nc" id="L75">                      }</span>
+<span class="nc" id="L76">                      return null;</span>
+                    },
+<span class="nc" id="L78">                    CreateRecurringNormalEventsUntilDate::matches, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L81">                        CreateRecurringNormalEventsUntilDate.perform(p, r, o);</span>
+<span class="nc" id="L82">                      } catch (IOException i) {</span>
+<span class="nc" id="L83">                        throw new IllegalArgumentException(i.getMessage());</span>
+<span class="nc" id="L84">                      }</span>
+<span class="nc" id="L85">                      return null;</span>
+                    },
+<span class="nc" id="L87">                    CreateSingleAllDayEvent::matches, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L90">                        CreateSingleAllDayEvent.perform(p, r, o);</span>
+<span class="nc" id="L91">                      } catch (IOException i) {</span>
+<span class="nc" id="L92">                        throw new IllegalArgumentException(i.getMessage());</span>
+<span class="nc" id="L93">                      }</span>
+<span class="nc" id="L94">                      return null;</span>
+                    },
+<span class="nc" id="L96">                    CreateRecurringAllDayEventsNTimes::matches, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L99">                        CreateRecurringAllDayEventsNTimes.perform(p, r, o);</span>
+<span class="nc" id="L100">                      } catch (IOException i) {</span>
+<span class="nc" id="L101">                        throw new IllegalArgumentException(i.getMessage());</span>
+<span class="nc" id="L102">                      }</span>
+<span class="nc" id="L103">                      return null;</span>
+                    },
+<span class="nc" id="L105">                    CreateRecurringAllDayEventsUntilDate::matches, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L108">                        CreateRecurringAllDayEventsUntilDate.perform(p, r, o);</span>
+<span class="nc" id="L109">                      } catch (IOException i) {</span>
+<span class="nc" id="L110">                        throw new IllegalArgumentException(i.getMessage());</span>
+<span class="nc" id="L111">                      }</span>
+<span class="nc" id="L112">                      return null;</span>
+                    },
+<span class="nc" id="L114">                    EditSingleEvent::matches, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L117">                        EditSingleEvent.perform(p, r, o);</span>
+<span class="nc" id="L118">                      } catch (IOException i) {</span>
+<span class="nc" id="L119">                        throw new IllegalArgumentException(i.getMessage());</span>
+<span class="nc" id="L120">                      }</span>
+<span class="nc" id="L121">                      return null;</span>
+                    },
+<span class="nc" id="L123">                    EditEventAndMaybeOnward::matches, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L126">                        EditEventAndMaybeOnward.perform(p, r, o);</span>
+<span class="nc" id="L127">                      } catch (IOException i) {</span>
+<span class="nc" id="L128">                        throw new IllegalArgumentException(i.getMessage());</span>
+<span class="nc" id="L129">                      }</span>
+<span class="nc" id="L130">                      return null;</span>
+                    },
+<span class="nc" id="L132">                    EditEventAndMaybeAll::matches, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L135">                        EditEventAndMaybeAll.perform(p, r, o);</span>
+<span class="nc" id="L136">                      } catch (IOException i) {</span>
+<span class="nc" id="L137">                        throw new IllegalArgumentException(i.getMessage());</span>
+<span class="nc" id="L138">                      }</span>
+<span class="nc" id="L139">                      return null;</span>
+                    }
+            )
+    );
+<span class="nc" id="L143">    commands.putAll(</span>
+<span class="nc" id="L144">            Map.of(</span>
+<span class="nc" id="L145">                    PrintAllEventsOnDate::matches, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L148">                        PrintAllEventsOnDate.perform(p, r, o);</span>
+<span class="nc" id="L149">                      } catch (IOException i) {</span>
+<span class="nc" id="L150">                        throw new IllegalArgumentException(i.getMessage());</span>
+<span class="nc" id="L151">                      }</span>
+<span class="nc" id="L152">                      return null;</span>
+                    },
+<span class="nc" id="L154">                    PrintAllEventsBetweenDates::matches, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L157">                        PrintAllEventsBetweenDates.perform(p, r, o);</span>
+<span class="nc" id="L158">                      } catch (IOException i) {</span>
+<span class="nc" id="L159">                        throw new IllegalArgumentException(i.getMessage());</span>
+<span class="nc" id="L160">                      }</span>
+<span class="nc" id="L161">                      return null;</span>
+                    },
+<span class="nc" id="L163">                    ShowStatusOnDateAtTime::matches, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L166">                        ShowStatusOnDateAtTime.perform(p, r, o);</span>
+<span class="nc" id="L167">                      } catch (IOException i) {</span>
+<span class="nc" id="L168">                        throw new IllegalArgumentException(i.getMessage());</span>
+<span class="nc" id="L169">                      }</span>
+<span class="nc" id="L170">                      return null;</span>
+                    }
+            )
+    );
+<span class="nc" id="L174">    return commands;</span>
+  }
+
+  @Override
+  public final CalendarController withNewCal(RobustCalendar r) {
+<span class="nc" id="L179">    return new CalendarControllerImpl(input, out, r);</span>
+  }
+
+  @Override
+  public void go() throws IOException {
+<span class="nc" id="L184">    out.append(&quot;Welcome to the calendar program!&quot;)</span>
+<span class="nc" id="L185">            .append(System.lineSeparator()).append(System.lineSeparator());</span>
+<span class="nc" id="L186">    printMenu();</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">    while (in.hasNextLine()) {</span>
+      try {
+<span class="nc" id="L189">        String prompt = in.nextLine().trim();</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">        if (goOnce(prompt)) {</span>
+<span class="nc" id="L191">          return;</span>
+        }
+<span class="nc" id="L193">        out.append(&quot;Please enter your next choice: &quot;);</span>
+<span class="nc" id="L194">      } catch (Exception e) {</span>
+<span class="nc" id="L195">        out.append(e.getMessage()).append(System.lineSeparator());</span>
+<span class="nc" id="L196">        out.append(&quot;Please enter your next choice: &quot;);</span>
+<span class="nc" id="L197">      }</span>
+    }
+<span class="nc" id="L199">  }</span>
+
+  @Override
+  public boolean goOnce(String prompt) throws IOException {
+<span class="nc" id="L203">    boolean matched = false;</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">    if (prompt.equals(&quot;exit&quot;)) {</span>
+<span class="nc" id="L205">      return true;</span>
+    } else {
+      for (Entry&lt;Function&lt;String, Boolean&gt;,
+              Function&lt;String, Function&lt;RobustCalendar, Function&lt;Appendable, Void&gt;&gt;&gt;&gt;
+<span class="nc bnc" id="L209" title="All 2 branches missed.">              command : commands.entrySet()) {</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">        if (command.getKey().apply(prompt)) {</span>
+<span class="nc" id="L211">          command.getValue().apply(prompt).apply(m).apply(out);</span>
+<span class="nc" id="L212">          matched = true;</span>
+<span class="nc" id="L213">          break;</span>
+        }
+<span class="nc" id="L215">      }</span>
+    }
+<span class="nc bnc" id="L217" title="All 2 branches missed.">    if (!matched) {</span>
+<span class="nc" id="L218">      out.append(&quot;Unfortunately, no actions matched. Please try again.\n&quot;);</span>
+    }
+<span class="nc" id="L220">    return false;</span>
+  }
+
+  @Override
+  public void printMenu() throws IOException {
+<span class="nc" id="L225">    out.append(&quot;Your choices are as follows: &quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L226">            .append(&quot;print menu&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L227">            .append(&quot;create event &lt;eventSubject&gt; from &lt;dateStringTtimeString&gt;&quot; +</span>
+<span class="nc" id="L228">                    &quot; to &lt;dateStringTtimeString&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L229">            .append(</span>
+                    &quot;create event &lt;eventSubject&gt; from &lt;dateStringTtimeString&gt; &quot; +
+                            &quot;to &lt;dateStringTtimeString&gt; repeats &lt;weekdays&gt; &quot; +
+<span class="nc" id="L232">                            &quot;for &lt;N&gt; times&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L233">            .append(&quot;create event &lt;eventSubject&gt; from &lt;dateStringTtimeString&gt; &quot; +</span>
+                    &quot;to &lt;dateStringTtimeString&gt; repeats &lt;weekdays&gt; &quot; +
+<span class="nc" id="L235">                    &quot;until &lt;dateString&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L236">            .append(&quot;create event &lt;eventSubject&gt; &quot; +</span>
+<span class="nc" id="L237">                    &quot;on &lt;dateString&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L238">            .append(&quot;create event &lt;eventSubject&gt; on &lt;dateString&gt; repeats &lt;weekdays&gt; &quot; +</span>
+<span class="nc" id="L239">                    &quot;for &lt;N&gt; times&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L240">            .append(&quot;create event &lt;eventSubject&gt; on &lt;dateString&gt; repeats &lt;weekdays&gt; &quot; +</span>
+<span class="nc" id="L241">                    &quot;until &lt;dateString&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L242">            .append(&quot;edit event &lt;property&gt; &lt;eventSubject&gt; from &lt;dateStringTtimeString&gt; &quot; +</span>
+                    &quot;to &lt;dateStringTtimeString&gt; &quot; +
+<span class="nc" id="L244">                    &quot;with &lt;NewPropertyValue&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L245">            .append(&quot;edit events &lt;property&gt; &lt;eventSubject&gt; from &lt;dateStringTtimeString&gt; &quot; +</span>
+<span class="nc" id="L246">                    &quot;with &lt;NewPropertyValue&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L247">            .append(&quot;edit series &lt;property&gt; &lt;eventSubject&gt; from &lt;dateStringTtimeString&gt; &quot; +</span>
+<span class="nc" id="L248">                    &quot;with &lt;NewPropertyValue&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L249">            .append(&quot;print events on &lt;dateString&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L250">            .append(&quot;print events from &lt;dateStringTtimeString&gt; &quot; +</span>
+<span class="nc" id="L251">                    &quot;to &lt;dateStringTtimeString&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L252">            .append(&quot;show status on &lt;dateStringTtimeString&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L253">            .append(&quot;exit&quot;).append(System.lineSeparator()).append(System.lineSeparator())</span>
+<span class="nc" id="L254">            .append(&quot;Note that &lt;dateString&gt; is a String of the form \&quot;YYYY-MM-DD\&quot;, &quot; +</span>
+                    &quot;&lt;timeString&gt; is a String of the &quot; +
+<span class="nc" id="L256">                    &quot;form \&quot;hh:mm\&quot;, &quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L257">            .append(&quot;and &lt;dateStringTtimeString&gt; is a String of the form \&quot;YYYY-MM-DDThh&quot; +</span>
+<span class="nc" id="L258">                    &quot;:mm\&quot;.&quot;).append(System.lineSeparator()).append(System.lineSeparator())</span>
+<span class="nc" id="L259">            .append(&quot;The &lt;property&gt; field may be one of the following: subject, start, &quot; +</span>
+<span class="nc" id="L260">                    &quot;end, description, location, or status. &quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L261">            .append(&quot;The format of the new property values are &lt;string&gt;, &quot; +</span>
+                    &quot;&lt;dateStringTtimeString&gt;, &lt;dateStringTtimeString&gt;, &quot; +
+<span class="nc" id="L263">                    &quot;&lt;string&gt;, &quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L264">            .append(&quot;&lt;string&gt;, and &lt;string&gt;, respectively. Subject and description may &quot; +</span>
+<span class="nc" id="L265">                    &quot;be anything, but location must be one of &quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L266">            .append(&quot;\&quot;physical\&quot; or \&quot;online\&quot;, and status must be one of \&quot;status\&quot; &quot; +</span>
+<span class="nc" id="L267">                    &quot;or \&quot;private\&quot;.&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L268">            .append(System.lineSeparator()).append(&quot;Please enter your choice: &quot;);</span>
+<span class="nc" id="L269">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

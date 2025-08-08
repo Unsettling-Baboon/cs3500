@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CalendarsImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">hw6</a> &gt; <a href="index.source.html" class="el_package">model.calendars</a> &gt; <span class="el_source">CalendarsImpl.java</span></div><h1>CalendarsImpl.java</h1><pre class="source lang-java linenums">package model.calendars;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
+
+import model.calendar.CalendarImpl;
+import model.calendar.RobustCalendar;
+import model.events.RobustCalEvent;
+
+public class CalendarsImpl implements RobustCalendars {
+  private final Set&lt;RobustCalendar&gt; calendars;
+  private RobustCalendar activeCal;
+
+<span class="fc" id="L20">  public CalendarsImpl() {</span>
+<span class="fc" id="L21">    this.calendars = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L22">  }</span>
+
+  @Override
+  public RobustCalendar getActiveCal() throws NoSuchElementException {
+<span class="fc bfc" id="L26" title="All 2 branches covered.">    if (activeCal != null) {</span>
+<span class="fc" id="L27">      return activeCal;</span>
+    } else {
+<span class="fc" id="L29">      throw new NoSuchElementException(&quot;No active calendar set!&quot;);</span>
+    }
+  }
+
+  @Override
+  public void createCalendar(String name, String timeZone) {
+<span class="fc" id="L35">    calendars.add(new CalendarImpl(name, timeZone));</span>
+<span class="fc" id="L36">  }</span>
+
+  @Override
+  public void useCalendar(String name) throws NoSuchElementException {
+    // ensure calendars not empty
+<span class="fc bfc" id="L41" title="All 2 branches covered.">    if (calendars.isEmpty()) {</span>
+<span class="fc" id="L42">      throw new NoSuchElementException(&quot;No calendars to choose from!&quot;);</span>
+    }
+    // find the calendar with name, if any
+<span class="fc" id="L45">    RobustCalendar activeCalMaybe = calendars.stream()</span>
+<span class="fc" id="L46">            .filter((it) -&gt; it.getName().equals(name))</span>
+<span class="fc" id="L47">            .findFirst()</span>
+<span class="fc" id="L48">            .orElse(null);</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">    if (activeCalMaybe != null) {</span>
+<span class="fc" id="L50">      activeCal = activeCalMaybe;</span>
+    } else {
+      // ensure exception thrown if no calendar found
+<span class="fc" id="L53">      throw new NoSuchElementException(&quot;No such calendar!&quot;);</span>
+    }
+<span class="fc" id="L55">  }</span>
+
+  @Override
+  public void editCalendar(String name, String property, String newPropertyVal)
+          throws NoSuchElementException {
+    // ensure calendars not empty
+<span class="fc bfc" id="L61" title="All 2 branches covered.">    if (calendars.isEmpty()) {</span>
+<span class="fc" id="L62">      throw new NoSuchElementException(&quot;No calendars to choose from!&quot;);</span>
+    }
+    // find target calendar with name, if any
+<span class="fc" id="L65">    RobustCalendar targetCal = calendars.stream()</span>
+<span class="fc" id="L66">            .filter((it) -&gt; it.getName().equals(name))</span>
+<span class="fc" id="L67">            .findFirst()</span>
+<span class="fc" id="L68">            .orElse(null);</span>
+    // ensure it's not null
+<span class="fc bfc" id="L70" title="All 2 branches covered.">    if (targetCal == null) {</span>
+<span class="fc" id="L71">      throw new NoSuchElementException(&quot;No calendar with the given name!&quot;);</span>
+    }
+    // carry out action based on property name
+<span class="fc bfc" id="L74" title="All 3 branches covered.">    switch (property) {</span>
+<span class="fc" id="L75">      case &quot;name&quot; -&gt; targetCal.setName(newPropertyVal);</span>
+<span class="fc" id="L76">      case &quot;timezone&quot; -&gt; targetCal.setZone(newPropertyVal);</span>
+<span class="fc" id="L77">      default -&gt; throw new IllegalArgumentException(&quot;No property with that name!&quot;);</span>
+    }
+<span class="fc" id="L79">  }</span>
+
+  @Override
+  public void copySingleEvent(
+          String name,
+          String fromDateStringTtimeString,
+          String calName,
+          String newFromDateStringTtimeString
+  ) throws NoSuchElementException {
+    // find the source event, if any
+<span class="fc" id="L89">    RobustCalEvent targetEventMaybe = getActiveCal().getEvents().stream()</span>
+<span class="fc" id="L90">            .filter(</span>
+                    (it) -&gt;
+<span class="fc bfc" id="L92" title="All 2 branches covered.">                            it.getSubject().equals(name)</span>
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">                                    &amp;&amp; it.getStartDateTime().equals(</span>
+<span class="fc" id="L94">                                    LocalDateTime.parse(fromDateStringTtimeString)</span>
+                            )
+            )
+<span class="fc" id="L97">            .findFirst()</span>
+<span class="fc" id="L98">            .orElse(null);</span>
+    // find the target calendar, if any
+<span class="fc" id="L100">    RobustCalendar targetCalMaybe = calendars.stream()</span>
+<span class="fc" id="L101">            .filter((it) -&gt; it.getName().equals(calName))</span>
+<span class="fc" id="L102">            .findFirst()</span>
+<span class="fc" id="L103">            .orElse(null);</span>
+    // cast-convert the arguments with &quot;maybe&quot; not in name anymore
+<span class="fc bfc" id="L105" title="All 4 branches covered.">    if (targetEventMaybe instanceof RobustCalEvent targetEvent</span>
+<span class="fc" id="L106">            &amp;&amp; targetCalMaybe instanceof RobustCalendar targetCal) {</span>
+<span class="fc" id="L107">      LocalDateTime startNew = LocalDateTime.parse(newFromDateStringTtimeString);</span>
+<span class="fc" id="L108">      LocalDateTime endNew = startNew.plusMinutes(</span>
+<span class="fc" id="L109">              ChronoUnit.MINUTES.between(</span>
+<span class="fc" id="L110">                      targetEvent.getStartDateTime(),</span>
+<span class="fc" id="L111">                      targetEvent.getEndDateTime()</span>
+              )
+      );
+<span class="fc bfc" id="L114" title="All 2 branches covered.">      if (!targetEvent.isAllDay()) {</span>
+<span class="fc" id="L115">        targetCal.createSingleNormalEvent(</span>
+                name,
+<span class="fc" id="L117">                startNew.toString(),</span>
+<span class="fc" id="L118">                endNew.toString()</span>
+        );
+      } else {
+<span class="fc" id="L121">        targetCal.createSingleAllDayEvent(</span>
+                name,
+<span class="fc" id="L123">                startNew.toLocalDate().toString()</span>
+        );
+      }
+      // throw relevant exceptions
+<span class="pc bpc" id="L127" title="1 of 4 branches missed.">    } else if (targetEventMaybe == null &amp;&amp; targetCalMaybe == null) {</span>
+<span class="nc" id="L128">      throw new NoSuchElementException(&quot;No event found nor an active calendar!&quot;);</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">    } else if (targetEventMaybe == null) {</span>
+<span class="fc" id="L130">      throw new NoSuchElementException(&quot;No event with that name or date exists!&quot;);</span>
+    } else {
+<span class="fc" id="L132">      throw new NoSuchElementException(&quot;No active calendar set!&quot;);</span>
+    }
+<span class="fc" id="L134">  }</span>
+
+  @Override
+  public void copyAllEventsOnDay(
+          String onDateString,
+          String calName,
+          String toDateString
+  ) throws NoSuchElementException {
+    // retrieve the events
+<span class="fc" id="L143">    List&lt;RobustCalEvent&gt; events = getActiveCal().printAllEventsOnDate(onDateString);</span>
+    // find the target calendar with that name, if any
+<span class="fc" id="L145">    RobustCalendar targetCalMaybe = calendars.stream()</span>
+<span class="fc" id="L146">            .filter((it) -&gt; it.getName().equals(calName))</span>
+<span class="fc" id="L147">            .findFirst()</span>
+<span class="fc" id="L148">            .orElse(null);</span>
+    // copy over the events
+<span class="fc bfc" id="L150" title="All 2 branches covered.">    if (targetCalMaybe != null) {</span>
+      // find the time difference in between the chosen day and new dates
+<span class="fc" id="L152">      long timeDiff = ChronoUnit.DAYS.between(</span>
+<span class="fc" id="L153">              LocalDate.parse(onDateString),</span>
+<span class="fc" id="L154">              LocalDate.parse(toDateString)</span>
+      );
+<span class="fc" id="L156">      events.forEach(</span>
+              (it) -&gt; {
+<span class="fc bfc" id="L158" title="All 2 branches covered.">                if (!it.isAllDay()) {</span>
+<span class="fc" id="L159">                  targetCalMaybe.createSingleNormalEvent(</span>
+<span class="fc" id="L160">                          it.getSubject(),</span>
+<span class="fc" id="L161">                          it.getStartDateTime().plusDays(timeDiff).toString(),</span>
+<span class="fc" id="L162">                          it.getEndDateTime().plusDays(timeDiff).toString()</span>
+                  );
+                } else {
+<span class="fc" id="L165">                  targetCalMaybe.createSingleAllDayEvent(</span>
+<span class="fc" id="L166">                          it.getSubject(),</span>
+<span class="fc" id="L167">                          it.getStartDateTime().toLocalDate()</span>
+<span class="fc" id="L168">                                  .plusDays(timeDiff).toString()</span>
+                  );
+                }
+<span class="fc" id="L171">              }</span>
+      );
+<span class="fc" id="L173">    } else {</span>
+<span class="fc" id="L174">      throw new NoSuchElementException(&quot;No such calendar with that name!&quot;);</span>
+    }
+<span class="fc" id="L176">  }</span>
+
+  @Override
+  public void copyAllEventsInBetweenDates(
+          String fromDateString,
+          String toDateString,
+          String calName,
+          String newDateString
+  ) throws NoSuchElementException {
+    // retrieve the events
+<span class="fc" id="L186">    List&lt;RobustCalEvent&gt; events = getActiveCal().printAllEventsBetweenDates(</span>
+<span class="fc" id="L187">            LocalDateTime.of(LocalDate.parse(fromDateString), LocalTime.parse(&quot;00:00&quot;))</span>
+<span class="fc" id="L188">                    .toString(),</span>
+<span class="fc" id="L189">            LocalDateTime.of(LocalDate.parse(toDateString), LocalTime.parse(&quot;23:59&quot;))</span>
+<span class="fc" id="L190">                    .toString()</span>
+    );
+    // find the target calendar with that name, if any
+<span class="fc" id="L193">    RobustCalendar targetCalMaybe = calendars.stream()</span>
+<span class="fc" id="L194">            .filter((it) -&gt; it.getName().equals(calName))</span>
+<span class="fc" id="L195">            .findFirst()</span>
+<span class="fc" id="L196">            .orElse(null);</span>
+    // copy over the events
+<span class="fc bfc" id="L198" title="All 2 branches covered.">    if (targetCalMaybe != null) {</span>
+<span class="fc" id="L199">      events.forEach(</span>
+              (it) -&gt; {
+<span class="fc bfc" id="L201" title="All 2 branches covered.">                if (!it.isAllDay()) {</span>
+<span class="fc" id="L202">                  targetCalMaybe.createSingleNormalEvent(</span>
+<span class="fc" id="L203">                          it.getSubject(),</span>
+<span class="fc" id="L204">                          it.getStartDateTime().toString(),</span>
+<span class="fc" id="L205">                          it.getEndDateTime().toString()</span>
+                  );
+                } else {
+<span class="fc" id="L208">                  targetCalMaybe.createSingleAllDayEvent(</span>
+<span class="fc" id="L209">                          it.getSubject(),</span>
+<span class="fc" id="L210">                          it.getStartDateTime().toLocalDate().toString()</span>
+                  );
+                }
+<span class="fc" id="L213">              }</span>
+      );
+    } else {
+<span class="fc" id="L216">      throw new NoSuchElementException(&quot;No such calendar with that name!&quot;);</span>
+    }
+<span class="fc" id="L218">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CalculatorControllerImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">hw3</a> &gt; <a href="index.source.html" class="el_package">controller</a> &gt; <span class="el_source">CalculatorControllerImpl.java</span></div><h1>CalculatorControllerImpl.java</h1><pre class="source lang-java linenums">package controller;
+
+import java.io.IOException;
+import java.util.Scanner;
+
+import calculator.Calculator;
+import calculator.SimpleCalculator;
+
+/**
+ * This class represents an implementation of the calculator controller interface
+ * that offers the ability to instantiate the controller and call the {@code execute()}
+ * method from this object to start the calculator program.
+ */
+public class CalculatorControllerImpl implements CalculatorController {
+  private final Appendable out;
+  private Calculator model;
+
+  /**
+   * Constructs a new instance of a controller for the calculator program
+   * that takes a model for the program as an argument, as well as an argument
+   * for where to write outputs to.
+   *
+   * @param model the model needed for processing.
+   * @param out   where output should be sent.
+   */
+<span class="fc" id="L26">  public CalculatorControllerImpl(Calculator model, Appendable out) {</span>
+<span class="fc" id="L27">    this.model = model;</span>
+<span class="fc" id="L28">    this.out = out;</span>
+<span class="fc" id="L29">  }</span>
+
+  @Override
+  public void execute(Readable rd) throws IOException {
+<span class="nc bnc" id="L33" title="All 2 branches missed.">    if (rd == null) {</span>
+<span class="nc" id="L34">      throw new IOException(&quot;Input is not readable!&quot;);</span>
+    }
+<span class="nc" id="L36">    redoNextInput((char) 0, rd);</span>
+<span class="nc" id="L37">  }</span>
+
+  private char redoNextInput(char nextInput, Readable in) {
+    // initialize relevant variables
+    Scanner scanner;
+    String nextLine;
+    // recursion quit condition
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">    if (nextInput == 'Q') {</span>
+<span class="nc" id="L45">      return nextInput;</span>
+    }
+    // wrap actions and try-catch in do-while to keep calculator always running
+    do {
+      try {
+<span class="fc" id="L50">        scanner = new Scanner(in);</span>
+<span class="fc" id="L51">        System.out.print(&quot;Enter an input (\&quot;Q\&quot; for exit): &quot;);</span>
+<span class="fc" id="L52">        nextLine = scanner.nextLine();</span>
+        // ensure that an empty character is not attempted to be made
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">        if (!nextLine.isEmpty()) {</span>
+<span class="fc" id="L55">          nextInput = nextLine.toCharArray()[0];</span>
+          // make sure that quitting doesn't print anything new nor add a &quot;Q&quot; to the model
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">          if (nextInput != 'Q') {</span>
+<span class="fc" id="L58">            model = model.input(nextInput);</span>
+<span class="fc" id="L59">            out.append(String.format(&quot;%s\n&quot;, model.getResult()));</span>
+          }
+        } else {
+<span class="nc" id="L62">          nextInput = (char) 0;</span>
+        }
+<span class="fc" id="L64">      } catch (Exception e) {</span>
+        // retrieve the appropriate error message
+<span class="fc" id="L66">        System.out.println(e.getMessage());</span>
+        /* apply recursion to maintain infinite exception catching, and pass in
+           the input so that previous results can all be retained in recursion */
+<span class="nc" id="L69">        nextInput = redoNextInput(nextInput, in);</span>
+<span class="fc" id="L70">      }</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">    } while (nextInput != 'Q');</span>
+<span class="nc" id="L72">    return nextInput;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

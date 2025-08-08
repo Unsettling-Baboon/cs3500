@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MockCalendars.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">hw6</a> &gt; <a href="index.source.html" class="el_package">model.calendars</a> &gt; <span class="el_source">MockCalendars.java</span></div><h1>MockCalendars.java</h1><pre class="source lang-java linenums">package model.calendars;
+
+import java.util.NoSuchElementException;
+
+import model.calendar.RobustCalendar;
+
+/**
+ * A mock implementation of RobustCalendars for testing purposes. This class
+ * primarily logs method calls to a {@link StringBuilder}.
+ */
+public class MockCalendars implements RobustCalendars {
+  private final StringBuilder log;
+
+  /**
+   * Construct a new mock model for the multi-calendar program.
+   */
+<span class="nc" id="L17">  public MockCalendars() {</span>
+<span class="nc" id="L18">    this.log = new StringBuilder();</span>
+<span class="nc" id="L19">  }</span>
+
+  /**
+   * Returns the accumulated log of method calls.
+   *
+   * @return A string containing all logged interactions.
+   */
+  public String getLog() {
+<span class="nc" id="L27">    return log.toString();</span>
+  }
+
+  @Override
+  public RobustCalendar getActiveCal() throws NoSuchElementException {
+<span class="nc" id="L32">    log.append(&quot;getActiveCal() called.\n&quot;);</span>
+<span class="nc" id="L33">    throw new NoSuchElementException(&quot;Mock: getActiveCal() called, but no actual calendar is managed by this logging mock.&quot;);</span>
+  }
+
+  @Override
+  public void createCalendar(String name, String timeZone) {
+<span class="nc" id="L38">    log.append(String.format(&quot;createCalendar(name='%s', timeZone='%s') called.\n&quot;, name, timeZone));</span>
+<span class="nc" id="L39">  }</span>
+
+  @Override
+  public void useCalendar(String name) throws NoSuchElementException {
+<span class="nc" id="L43">    log.append(String.format(&quot;useCalendar(name='%s') called.\n&quot;, name));</span>
+<span class="nc" id="L44">  }</span>
+
+  @Override
+  public void editCalendar(String name, String property, String newPropertyVal)
+          throws NoSuchElementException, IllegalArgumentException {
+<span class="nc" id="L49">    log.append(String.format(&quot;editCalendar(name='%s', property='%s', newPropertyVal='%s') called.\n&quot;,</span>
+            name, property, newPropertyVal));
+<span class="nc" id="L51">  }</span>
+
+  @Override
+  public void copySingleEvent(
+          String name,
+          String fromDateStringTtimeString,
+          String calName,
+          String newFromDateStringTtimeString
+  ) throws NoSuchElementException {
+<span class="nc" id="L60">    log.append(String.format(&quot;copySingleEvent(name='%s', fromDate='%s', calName='%s', newFromDate='%s') called.\n&quot;,</span>
+            name, fromDateStringTtimeString, calName, newFromDateStringTtimeString));
+<span class="nc" id="L62">  }</span>
+
+  @Override
+  public void copyAllEventsOnDay(
+          String onDateString,
+          String calName,
+          String toDateString
+  ) throws NoSuchElementException {
+<span class="nc" id="L70">    log.append(String.format(&quot;copyAllEventsOnDay(onDate='%s', calName='%s', toDate='%s') called.\n&quot;,</span>
+            onDateString, calName, toDateString));
+<span class="nc" id="L72">  }</span>
+
+  @Override
+  public void copyAllEventsInBetweenDates(
+          String fromDateString,
+          String toDateString,
+          String calName,
+          String newDateString
+  ) throws NoSuchElementException {
+<span class="nc" id="L81">    log.append(String.format(&quot;copyAllEventsInBetweenDates(fromDate='%s', toDate='%s', calName='%s', newDate='%s') called.\n&quot;,</span>
+            fromDateString, toDateString, calName, newDateString));
+<span class="nc" id="L83">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

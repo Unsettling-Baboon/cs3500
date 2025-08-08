@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CalendarsControllerImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">hw6</a> &gt; <a href="index.source.html" class="el_package">controller.calendars</a> &gt; <span class="el_source">CalendarsControllerImpl.java</span></div><h1>CalendarsControllerImpl.java</h1><pre class="source lang-java linenums">package controller.calendars;
+
+import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.function.Function;
+
+import controller.calendar.CalendarController;
+import controller.calendar.CalendarControllerImpl;
+import controller.commands.calendars.CopyAllEventsInBetweenDates;
+import controller.commands.calendars.CopyAllEventsOnDay;
+import controller.commands.calendars.CopySingleEvent;
+import controller.commands.calendars.CreateCalendar;
+import controller.commands.calendars.EditCalendar;
+import controller.commands.calendars.UseCalendar;
+import model.calendar.CalendarImpl;
+import model.calendars.RobustCalendars;
+
+public class CalendarsControllerImpl
+        extends CalendarControllerImpl implements CalendarsController {
+  private final Scanner in;
+  private final Appendable out;
+  private final RobustCalendars m;
+  private CalendarController c;
+  private final Set&lt;Function&lt;String, Boolean&gt;&gt; oldChecks;
+  private final Map&lt;Function&lt;String, Boolean&gt;,
+          Function&lt;String, Function&lt;RobustCalendars, Function&lt;Appendable, Void&gt;&gt;&gt;&gt; commands;
+
+  public CalendarsControllerImpl(
+          Readable in,
+          Appendable out,
+          RobustCalendars m
+  ) {
+<span class="nc" id="L37">    super(in, out, new CalendarImpl());</span>
+<span class="nc" id="L38">    this.in = new Scanner(in);</span>
+<span class="nc" id="L39">    this.out = out;</span>
+<span class="nc" id="L40">    this.m = m;</span>
+<span class="nc" id="L41">    this.c = new CalendarControllerImpl(in, out, new CalendarImpl());</span>
+<span class="nc" id="L42">    oldChecks = super.putCalCommands().keySet();</span>
+<span class="nc" id="L43">    commands = putCalsCommands();</span>
+<span class="nc" id="L44">  }</span>
+
+  private Map&lt;Function&lt;String, Boolean&gt;,
+          Function&lt;String, Function&lt;RobustCalendars, Function&lt;Appendable, Void&gt;&gt;&gt;&gt; putCalsCommands() {
+    final Map&lt;Function&lt;String, Boolean&gt;,
+<span class="nc" id="L49">            Function&lt;String, Function&lt;RobustCalendars, Function&lt;Appendable, Void&gt;&gt;&gt;&gt; commands =</span>
+            new LinkedHashMap&lt;&gt;();
+<span class="nc" id="L51">    commands.putAll(</span>
+<span class="nc" id="L52">            Map.of(</span>
+<span class="nc" id="L53">                    CreateCalendar::matches, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L56">                        CreateCalendar.perform(p, r, o);</span>
+<span class="nc" id="L57">                      } catch (IOException i) {</span>
+<span class="nc" id="L58">                        throw new IllegalArgumentException(i.getMessage());</span>
+<span class="nc" id="L59">                      }</span>
+<span class="nc" id="L60">                      return null;</span>
+                    },
+<span class="nc" id="L62">                    EditCalendar::matches, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L65">                        EditCalendar.perform(p, r, o);</span>
+<span class="nc" id="L66">                      } catch (IOException i) {</span>
+<span class="nc" id="L67">                        throw new IllegalArgumentException(i.getMessage());</span>
+<span class="nc" id="L68">                      }</span>
+<span class="nc" id="L69">                      return null;</span>
+                    },
+<span class="nc" id="L71">                    CopySingleEvent::matches, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L74">                        CopySingleEvent.perform(p, r, o);</span>
+<span class="nc" id="L75">                      } catch (IOException i) {</span>
+<span class="nc" id="L76">                        throw new IllegalArgumentException(i.getMessage());</span>
+<span class="nc" id="L77">                      }</span>
+<span class="nc" id="L78">                      return null;</span>
+                    },
+<span class="nc" id="L80">                    CopyAllEventsOnDay::matches, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L83">                        CopyAllEventsOnDay.perform(p, r, o);</span>
+<span class="nc" id="L84">                      } catch (IOException i) {</span>
+<span class="nc" id="L85">                        throw new IllegalArgumentException(i.getMessage());</span>
+<span class="nc" id="L86">                      }</span>
+<span class="nc" id="L87">                      return null;</span>
+                    },
+<span class="nc" id="L89">                    CopyAllEventsInBetweenDates::matches, p -&gt; r -&gt; o -&gt;</span>
+                    {
+                      try {
+<span class="nc" id="L92">                        CopyAllEventsInBetweenDates.perform(p, r, o);</span>
+<span class="nc" id="L93">                      } catch (IOException i) {</span>
+<span class="nc" id="L94">                        throw new IllegalArgumentException(i.getMessage());</span>
+<span class="nc" id="L95">                      }</span>
+<span class="nc" id="L96">                      return null;</span>
+                    }
+            )
+    );
+<span class="nc" id="L100">    return commands;</span>
+  }
+
+  @Override
+  public void go() throws IOException {
+<span class="nc" id="L105">    out.append(System.lineSeparator()).append(&quot;Welcome to the calendar program!&quot;)</span>
+<span class="nc" id="L106">            .append(System.lineSeparator()).append(System.lineSeparator());</span>
+<span class="nc" id="L107">    printMenu();</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">    while (in.hasNextLine()) {</span>
+      try {
+<span class="nc" id="L110">        String prompt = in.nextLine().trim();</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        if (prompt.equals(&quot;exit&quot;)) {</span>
+<span class="nc" id="L112">          return;</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        } else if (prompt.equals(&quot;print menu&quot;)) {</span>
+<span class="nc" id="L114">          printMenu();</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        } else if (UseCalendar.matches(prompt)) {</span>
+<span class="nc" id="L116">          c = UseCalendar.perform(prompt, m, out, c);</span>
+<span class="nc" id="L117">          out.append(&quot;Please enter your next choice: &quot;);</span>
+        } else {
+<span class="nc bnc" id="L119" title="All 2 branches missed.">          if (oldChecks.stream().anyMatch((it) -&gt; it.apply(prompt))) {</span>
+<span class="nc" id="L120">            m.getActiveCal();</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">            if (c.goOnce(prompt)) {</span>
+<span class="nc" id="L122">              return;</span>
+            }
+          } else {
+<span class="nc" id="L125">            boolean matched = false;</span>
+            for (Entry&lt;Function&lt;String, Boolean&gt;,
+                    Function&lt;String, Function&lt;RobustCalendars, Function&lt;Appendable, Void&gt;&gt;&gt;&gt;
+<span class="nc bnc" id="L128" title="All 2 branches missed.">                    command : commands.entrySet()) {</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">              if (command.getKey().apply(prompt)) {</span>
+<span class="nc" id="L130">                command.getValue().apply(prompt).apply(m).apply(out);</span>
+<span class="nc" id="L131">                matched = true;</span>
+<span class="nc" id="L132">                break;</span>
+              }
+<span class="nc" id="L134">            }</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">            if (!matched) {</span>
+<span class="nc" id="L136">              out.append(&quot;Unfortunately, no actions matched. Please try again.\n&quot;);</span>
+            }
+          }
+<span class="nc" id="L139">          out.append(&quot;Please enter your next choice: &quot;);</span>
+        }
+<span class="nc" id="L141">      } catch (Exception e) {</span>
+<span class="nc" id="L142">        out.append(&quot;ACTION FAILED: &quot;).append(e.getMessage()).append(System.lineSeparator());</span>
+<span class="nc" id="L143">        out.append(&quot;Please enter your next choice: &quot;);</span>
+<span class="nc" id="L144">      }</span>
+    }
+<span class="nc" id="L146">  }</span>
+
+  @Override
+  public void printMenu() throws IOException {
+<span class="nc" id="L150">    out.append(&quot;Your choices are as &quot;)</span>
+<span class="nc" id="L151">            .append(&quot;follows: &quot;).append(System.lineSeparator()).append(System.lineSeparator())</span>
+<span class="nc" id="L152">            .append(&quot;print menu&quot;).append(System.lineSeparator()).append(System.lineSeparator())</span>
+<span class="nc" id="L153">            .append(&quot;(You must first create a calendar before creating &quot; +</span>
+<span class="nc" id="L154">                    &quot;events.)&quot;).append(System.lineSeparator()).append(System.lineSeparator())</span>
+<span class="nc" id="L155">            .append(&quot;create calendar --name &lt;calName&gt; --timezone &lt;area/&quot; +</span>
+<span class="nc" id="L156">                    &quot;location&gt;&quot;).append(System.lineSeparator()).append(System.lineSeparator())</span>
+<span class="nc" id="L157">            .append(&quot;edit calendar --name &lt;calName&gt; --property &lt;property&gt; &quot; +</span>
+                    &quot;&lt;newPropertyValue&gt;&quot;
+<span class="nc" id="L159">            ).append(System.lineSeparator()).append(System.lineSeparator())</span>
+<span class="nc" id="L160">            .append(&quot;use calendar --name &lt;calName&gt;&quot;</span>
+<span class="nc" id="L161">            ).append(System.lineSeparator()).append(System.lineSeparator())</span>
+<span class="nc" id="L162">            .append(&quot;copy event &lt;eventName&gt; on &lt;dateStringTtimeString&gt; --target &quot; +</span>
+<span class="nc" id="L163">                    &quot;&lt;calName&gt; to &lt;dateStringTtimeString&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L164">            .append(&quot;copy events on &lt;dateString&gt; --target &lt;calendarName&gt; &quot; +</span>
+<span class="nc" id="L165">                    &quot;to &lt;dateString&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L166">            .append(&quot;copy events between &lt;dateString&gt; and &lt;dateString&gt; --target &lt;calName&gt; to &quot; +</span>
+<span class="nc" id="L167">                    &quot;&lt;dateString&gt;&quot;).append(System.lineSeparator()).append(System.lineSeparator())</span>
+<span class="nc" id="L168">            .append(&quot;create event &lt;eventSubject&gt; from &lt;dateStringTtimeString&gt;&quot; +</span>
+<span class="nc" id="L169">                    &quot; to &lt;dateStringTtimeString&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L170">            .append(&quot;create event &lt;eventSubject&gt; from &lt;dateStringTtimeString&gt; &quot; +</span>
+                    &quot;to &lt;dateStringTtimeString&gt; repeats &lt;weekdays&gt; &quot; +
+<span class="nc" id="L172">                    &quot;for &lt;N&gt; times&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L173">            .append(&quot;create event &lt;eventSubject&gt; from &lt;dateStringTtimeString&gt; &quot; +</span>
+                    &quot;to &lt;dateStringTtimeString&gt; repeats &lt;weekdays&gt; &quot; +
+<span class="nc" id="L175">                    &quot;until &lt;dateString&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L176">            .append(&quot;create event &lt;eventSubject&gt; &quot; +</span>
+<span class="nc" id="L177">                    &quot;on &lt;dateString&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L178">            .append(&quot;create event &lt;eventSubject&gt; on &lt;dateString&gt; repeats &lt;weekdays&gt; &quot; +</span>
+<span class="nc" id="L179">                    &quot;for &lt;N&gt; times&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L180">            .append(&quot;create event &lt;eventSubject&gt; on &lt;dateString&gt; repeats &lt;weekdays&gt; &quot; +</span>
+                    &quot;until &quot; +
+<span class="nc" id="L182">                    &quot;&lt;dateString&gt;&quot;).append(System.lineSeparator()).append(System.lineSeparator())</span>
+<span class="nc" id="L183">            .append(&quot;edit event &lt;property&gt; &lt;eventSubject&gt; from &lt;dateStringTtimeString&gt; &quot; +</span>
+                    &quot;to &lt;dateStringTtimeString&gt; &quot; +
+<span class="nc" id="L185">                    &quot;with &lt;newPropertyValue&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L186">            .append(&quot;edit events &lt;property&gt; &lt;eventSubject&gt; from &lt;dateStringTtimeString&gt; &quot; +</span>
+<span class="nc" id="L187">                    &quot;with &lt;newPropertyValue&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L188">            .append(&quot;edit series &lt;property&gt; &lt;eventSubject&gt; from &lt;dateStringTtimeString&gt; &quot; +</span>
+                    &quot;with &lt;newPropertyValue&gt;&quot;
+<span class="nc" id="L190">            ).append(System.lineSeparator()).append(System.lineSeparator())</span>
+<span class="nc" id="L191">            .append(&quot;print events on &lt;dateString&gt;&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L192">            .append(&quot;print events from &lt;dateStringTtimeString&gt; &quot; +</span>
+                    &quot;to &lt;dateStringTtimeString&gt;&quot;
+<span class="nc" id="L194">            ).append(System.lineSeparator()).append(System.lineSeparator())</span>
+<span class="nc" id="L195">            .append(&quot;show status on &lt;dateStringTtimeString&gt;&quot;</span>
+<span class="nc" id="L196">            ).append(System.lineSeparator()).append(System.lineSeparator())</span>
+<span class="nc" id="L197">            .append(&quot;exit&quot;).append(System.lineSeparator()).append(System.lineSeparator())</span>
+<span class="nc" id="L198">            .append(&quot;Note that &lt;dateString&gt; is a String of the form \&quot;YYYY-MM-DD\&quot;, &quot; +</span>
+                    &quot;&lt;timeString&gt; is a String of the &quot; +
+<span class="nc" id="L200">                    &quot;form \&quot;hh:mm\&quot;, &quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L201">            .append(&quot;and &lt;dateStringTtimeString&gt; is a String of the form \&quot;YYYY-MM-DDThh&quot; +</span>
+<span class="nc" id="L202">                    &quot;:mm\&quot;.&quot;).append(System.lineSeparator()).append(System.lineSeparator())</span>
+<span class="nc" id="L203">            .append(&quot;For calendars, the &lt;property&gt; field may be one of either \&quot;name\&quot; or&quot; +</span>
+                    &quot; \&quot;timezone\&quot;; for events, it may be one of &quot; +
+<span class="nc" id="L205">                    &quot;the following:&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L206">            .append(&quot; \&quot;subject\&quot;, \&quot;start\&quot;, \&quot;end\&quot;, \&quot;description\&quot;, \&quot;location\&quot;, or &quot; +</span>
+<span class="nc" id="L207">                    &quot;\&quot;status\&quot;. &quot;).append(System.lineSeparator()).append(System.lineSeparator())</span>
+<span class="nc" id="L208">            .append(&quot;For calendars, the format of the new property values are &lt;string&gt; and&quot; +</span>
+                    &quot; &lt;string&gt;, respectively, but for events, &quot; +
+<span class="nc" id="L210">                    &quot;the formats, &quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L211">            .append(&quot;respectively, are: &lt;string&gt;, &lt;dateStringTtimeString&gt;, &lt;dateStringTtimeString&gt;, &quot; +</span>
+<span class="nc" id="L212">                    &quot;&lt;string&gt;, &lt;string&gt;, and &lt;string&gt;. Subject &quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L213">            .append(&quot;and description may be anything, but location must &quot; +</span>
+                    &quot;be one of \&quot;physical\&quot; or \&quot;online\&quot;, and status must be one &quot; +
+<span class="nc" id="L215">                    &quot;of \&quot;status\&quot; &quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L216">            .append(&quot;or \&quot;private\&quot;.&quot;).append(System.lineSeparator())</span>
+<span class="nc" id="L217">            .append(System.lineSeparator()).append(&quot;Please enter your choice: &quot;);</span>
+<span class="nc" id="L218">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

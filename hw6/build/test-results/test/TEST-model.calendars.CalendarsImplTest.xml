@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="model.calendars.CalendarsImplTest" tests="24" skipped="0" failures="0" errors="0" timestamp="2025-06-16T15:05:53" hostname="abhis-mac-air-2.local" time="0.057">
+  <properties/>
+  <testcase name="testEditCalendarName()" classname="model.calendars.CalendarsImplTest" time="0.012"/>
+  <testcase name="testCopyAllEventsOnDaySuccessful()" classname="model.calendars.CalendarsImplTest" time="0.009"/>
+  <testcase name="testEditCalendarTimeZone()" classname="model.calendars.CalendarsImplTest" time="0.004"/>
+  <testcase name="testUseCalendarNonExistentCalendar()" classname="model.calendars.CalendarsImplTest" time="0.0"/>
+  <testcase name="testCopyAllEventsInBetweenDatesNoEvents()" classname="model.calendars.CalendarsImplTest" time="0.001"/>
+  <testcase name="testEditCalendarNoCalendarsExist()" classname="model.calendars.CalendarsImplTest" time="0.001"/>
+  <testcase name="testCopySingleEventNoActiveCalendar()" classname="model.calendars.CalendarsImplTest" time="0.001"/>
+  <testcase name="testEditCalendarNonExistentCalendar()" classname="model.calendars.CalendarsImplTest" time="0.001"/>
+  <testcase name="testCopySingleEventMalformedDateTimeString()" classname="model.calendars.CalendarsImplTest" time="0.002"/>
+  <testcase name="testCreateCalendar()" classname="model.calendars.CalendarsImplTest" time="0.002"/>
+  <testcase name="testCopyAllEventsInBetweenDatesNoActiveCalendar()" classname="model.calendars.CalendarsImplTest" time="0.0"/>
+  <testcase name="testCopySingleEventSourceEventNotFound()" classname="model.calendars.CalendarsImplTest" time="0.0"/>
+  <testcase name="testCopySingleAllDayEventSuccessful()" classname="model.calendars.CalendarsImplTest" time="0.001"/>
+  <testcase name="testCopyAllEventsOnDayNoEvents()" classname="model.calendars.CalendarsImplTest" time="0.001"/>
+  <testcase name="testCopyAllEventsInBetweenDatesSuccessful()" classname="model.calendars.CalendarsImplTest" time="0.002"/>
+  <testcase name="testCopyAllEventsInBetweenDatesTargetCalendarNotFound()" classname="model.calendars.CalendarsImplTest" time="0.001"/>
+  <testcase name="testUseCalendarNoCalendarsExist()" classname="model.calendars.CalendarsImplTest" time="0.0"/>
+  <testcase name="testCopyAllEventsOnDayNoActiveCalendar()" classname="model.calendars.CalendarsImplTest" time="0.001"/>
+  <testcase name="testCopySingleEventSuccessful()" classname="model.calendars.CalendarsImplTest" time="0.001"/>
+  <testcase name="testUseCalendarExistingCalendar()" classname="model.calendars.CalendarsImplTest" time="0.001"/>
+  <testcase name="testCopyAllEventsOnDayTargetCalendarNotFound()" classname="model.calendars.CalendarsImplTest" time="0.001"/>
+  <testcase name="testCopySingleEventTargetCalendarNotFound()" classname="model.calendars.CalendarsImplTest" time="0.0"/>
+  <testcase name="testGetActiveCalNoActiveCalendar()" classname="model.calendars.CalendarsImplTest" time="0.0"/>
+  <testcase name="testEditCalendarInvalidProperty()" classname="model.calendars.CalendarsImplTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

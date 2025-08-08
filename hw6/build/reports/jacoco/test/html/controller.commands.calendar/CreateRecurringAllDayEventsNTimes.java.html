@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CreateRecurringAllDayEventsNTimes.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">hw6</a> &gt; <a href="index.source.html" class="el_package">controller.commands.calendar</a> &gt; <span class="el_source">CreateRecurringAllDayEventsNTimes.java</span></div><h1>CreateRecurringAllDayEventsNTimes.java</h1><pre class="source lang-java linenums">package controller.commands.calendar;
+
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import model.calendar.RobustCalendar;
+
+public class CreateRecurringAllDayEventsNTimes extends CalCommand {
+  public CreateRecurringAllDayEventsNTimes(
+          RobustCalendar m,
+          String eventSubject,
+          String dateString,
+          String repeatWeekdays,
+          int N
+  ) {
+<span class="nc" id="L17">    super(m);</span>
+<span class="nc" id="L18">    this.eventSubject = eventSubject;</span>
+<span class="nc" id="L19">    this.dateString = dateString;</span>
+<span class="nc" id="L20">    this.repeatWeekdays = repeatWeekdays;</span>
+<span class="nc" id="L21">    this.N = N;</span>
+<span class="nc" id="L22">  }</span>
+
+  public static Matcher matcher(String prompt) {
+<span class="nc" id="L25">    Pattern allDaySeriesCreate = Pattern.compile(</span>
+            &quot;^create event (.*?) on (\\S+) repeats (\\S+) for (\\S+) times$&quot;
+    );
+<span class="nc" id="L28">    return allDaySeriesCreate.matcher(prompt);</span>
+  }
+
+  public static boolean matches(String prompt) {
+<span class="nc" id="L32">    return matcher(prompt).matches();</span>
+  }
+
+  public static void perform(
+          String prompt,
+          RobustCalendar r,
+          Appendable out
+  ) throws IOException {
+<span class="nc" id="L40">    Matcher matcher = matcher(prompt);</span>
+<span class="nc" id="L41">    boolean matches = matcher.matches(); // CRUCIAL to ensure matcher groups populate</span>
+<span class="nc" id="L42">    String eventSubject = matcher.group(1).trim();</span>
+<span class="nc" id="L43">    String date = matcher.group(2);</span>
+<span class="nc" id="L44">    String weekDays = matcher.group(3);</span>
+<span class="nc" id="L45">    int N = Integer.parseInt(matcher.group(4));</span>
+<span class="nc" id="L46">    new CreateRecurringAllDayEventsNTimes(</span>
+            r,
+            eventSubject,
+            date,
+            weekDays,
+            N
+<span class="nc" id="L52">    ).perform();</span>
+<span class="nc" id="L53">    out.append(</span>
+<span class="nc" id="L54">            String.format(</span>
+                    &quot;Created series with subjects \&quot;%s\&quot; &quot;
+                            + &quot;starting on %s and repeating %d &quot;
+                            + &quot;times%s&quot;,
+                    eventSubject,
+                    date,
+<span class="nc" id="L60">                    N,</span>
+<span class="nc" id="L61">                    System.lineSeparator()</span>
+            )
+    );
+<span class="nc" id="L64">  }</span>
+
+  @Override
+  public void perform() {
+<span class="nc" id="L68">    m.createRecurringAllDayEventsNTimes(</span>
+            eventSubject,
+            dateString,
+            repeatWeekdays,
+            N
+    );
+<span class="nc" id="L74">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

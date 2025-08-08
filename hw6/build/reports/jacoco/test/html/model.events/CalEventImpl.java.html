@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CalEventImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">hw6</a> &gt; <a href="index.source.html" class="el_package">model.events</a> &gt; <span class="el_source">CalEventImpl.java</span></div><h1>CalEventImpl.java</h1><pre class="source lang-java linenums">package model.events;
+
+import java.time.DateTimeException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+
+import model.calendar.CalendarImpl;
+
+/**
+ * A class representing a robust calendar event with the ability to
+ * track any date and time, as well as numerous descriptive fields,
+ * such as a description, location, and status.
+ */
+public class CalEventImpl implements RobustCalEvent {
+<span class="fc" id="L21">  private final static Map&lt;Character, DayOfWeek&gt; DAYS_OF_THE_WEEK =</span>
+          new HashMap&lt;&gt;(
+<span class="fc" id="L23">                  Map.of(</span>
+<span class="fc" id="L24">                          'M', DayOfWeek.MONDAY,</span>
+<span class="fc" id="L25">                          'T', DayOfWeek.TUESDAY,</span>
+<span class="fc" id="L26">                          'W', DayOfWeek.WEDNESDAY,</span>
+<span class="fc" id="L27">                          'R', DayOfWeek.THURSDAY,</span>
+<span class="fc" id="L28">                          'F', DayOfWeek.FRIDAY,</span>
+<span class="fc" id="L29">                          'S', DayOfWeek.SATURDAY,</span>
+<span class="fc" id="L30">                          'U', DayOfWeek.SUNDAY</span>
+                  )
+          );
+  protected String subject;
+  protected LocalDateTime startDateTime;
+  protected LocalDateTime endDateTime;
+  protected boolean isAllDay;
+  private Series series;
+  private String description;
+  protected Location location;
+  private Status status;
+
+  /**
+   * Create a new &quot;normal&quot; calendar event as defined in the
+   * {@code createSingleNormalEvent()} method of the {@link CalendarImpl}
+   * class. Its status is defaulted to private.
+   *
+   * @param subject       a subject String.
+   * @param startDateTime the start and date time for this event.
+   * @param endDateTime   the end date and time for this event.
+   * @throws DateTimeException if the start date and time is after the end
+   *                           date and time, or the end date and time is
+   *                           before the start date and time.
+   */
+  public CalEventImpl(
+          String subject,
+          LocalDateTime startDateTime,
+          LocalDateTime endDateTime
+<span class="fc" id="L58">  ) throws DateTimeException {</span>
+<span class="pc bpc" id="L59" title="2 of 4 branches missed.">    if (startDateTime.isAfter(endDateTime) || endDateTime.isBefore(startDateTime)) {</span>
+<span class="nc" id="L60">      throw new DateTimeException(&quot;Invalid date or time entered in creating event!&quot;);</span>
+    }
+<span class="fc" id="L62">    this.subject = subject;</span>
+<span class="fc" id="L63">    this.startDateTime = startDateTime;</span>
+<span class="fc" id="L64">    this.endDateTime = endDateTime;</span>
+<span class="fc" id="L65">    this.status = Status.PRIVATE;</span>
+<span class="fc" id="L66">  }</span>
+
+  /**
+   * Create a new &quot;normal&quot; calendar event as defined in the
+   * {@code createSingleAllDayEvent()} method of the {@link CalendarImpl}
+   * class. Its status is defaulted to private.
+   *
+   * @param subject   the subject to give this event.
+   * @param startDate the date this event should last all-day on.
+   */
+<span class="fc" id="L76">  public CalEventImpl(String subject, LocalDate startDate) {</span>
+<span class="fc" id="L77">    this.subject = subject;</span>
+<span class="fc" id="L78">    this.startDateTime = LocalDateTime.of(</span>
+            startDate,
+<span class="fc" id="L80">            LocalTime.of(8, 0)</span>
+    );
+<span class="fc" id="L82">    this.endDateTime = LocalDateTime.of(</span>
+            startDate,
+<span class="fc" id="L84">            LocalTime.of(17, 0)</span>
+    );
+<span class="fc" id="L86">    this.isAllDay = true;</span>
+<span class="fc" id="L87">    this.status = Status.PRIVATE;</span>
+<span class="fc" id="L88">  }</span>
+
+  /**
+   * A no-arg constructor for the purpose of this class's only subclass.
+   */
+<span class="fc" id="L93">  protected CalEventImpl() {}</span>
+
+  /**
+   * Retrieve the conversion from days of the week as letters to the actual
+   * day of the week.
+   *
+   * @return the map from characters representing days of the week to the
+   * corresponding day of the week as a {@link DayOfWeek} enum.
+   */
+  public static Map&lt;Character, DayOfWeek&gt; getDaysOfTheWeek() {
+<span class="nc" id="L103">    return DAYS_OF_THE_WEEK;</span>
+  }
+
+  @Override
+  public String getSubject() {
+<span class="fc" id="L108">    return subject;</span>
+  }
+
+  @Override
+  public LocalDateTime getStartDateTime() {
+<span class="fc" id="L113">    return startDateTime;</span>
+  }
+
+  @Override
+  public LocalDateTime getEndDateTime() {
+<span class="fc" id="L118">    return endDateTime;</span>
+  }
+
+  @Override
+  public boolean isAllDay() {
+<span class="fc" id="L123">    return isAllDay;</span>
+  }
+
+  @Override
+  public Series getSeries() {
+<span class="nc" id="L128">    return series;</span>
+  }
+
+  @Override
+  public String getDescription() {
+<span class="nc bnc" id="L133" title="All 2 branches missed.">    return (description != null) ? description : &quot;Description not found&quot;;</span>
+  }
+
+  @Override
+  public Location getLocation() {
+<span class="fc" id="L138">    return location;</span>
+  }
+
+  @Override
+  public Status getStatus() {
+<span class="nc" id="L143">    return status;</span>
+  }
+
+  @Override
+  public void setSubject(String subject) {
+<span class="nc" id="L148">    this.subject = subject;</span>
+<span class="nc" id="L149">  }</span>
+
+  @Override
+  public void setSeries(Series series) {
+<span class="nc" id="L153">    this.series = series;</span>
+<span class="nc" id="L154">  }</span>
+
+  @Override
+  public void setAllDay() {
+<span class="nc bnc" id="L158" title="All 2 branches missed.">    if (!isAllDay) {</span>
+<span class="nc" id="L159">      isAllDay = true;</span>
+<span class="nc" id="L160">      this.startDateTime = LocalDateTime.of(</span>
+<span class="nc" id="L161">              startDateTime.toLocalDate(),</span>
+<span class="nc" id="L162">              LocalTime.of(8, 0)</span>
+      );
+<span class="nc" id="L164">      this.endDateTime = LocalDateTime.of(</span>
+<span class="nc" id="L165">              startDateTime.toLocalDate(),</span>
+<span class="nc" id="L166">              LocalTime.of(17, 0)</span>
+      );
+    }
+<span class="nc" id="L169">  }</span>
+
+  @Override
+  public void setStartDateTime(String startDateStringTtimeString) {
+<span class="nc" id="L173">    LocalDateTime startDateTime = LocalDateTime.parse(startDateStringTtimeString);</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">    if (startDateTime.isAfter(endDateTime)) {</span>
+<span class="nc" id="L175">      throw new DateTimeException(&quot;Start date/time after end date/time!&quot; +</span>
+              &quot; Edit end date/time first.&quot;);
+<span class="nc bnc" id="L177" title="All 2 branches missed.">    } else if (isAllDay) {</span>
+<span class="nc" id="L178">      isAllDay = false;</span>
+    } else {
+<span class="nc" id="L180">      this.startDateTime = startDateTime;</span>
+    }
+<span class="nc" id="L182">  }</span>
+
+  @Override
+  public void setDescription(String description) {
+<span class="nc" id="L186">    this.description = description;</span>
+<span class="nc" id="L187">  }</span>
+
+  @Override
+  public void setEndDateTime(String endDateStringTtimeString) {
+<span class="nc" id="L191">    LocalDateTime endDateTime = LocalDateTime.parse(endDateStringTtimeString);</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">    if (endDateTime.isBefore(startDateTime)) {</span>
+<span class="nc" id="L193">      throw new DateTimeException(&quot;End date/time before start date/time!&quot; +</span>
+              &quot; Edit start date/time first.&quot;);
+<span class="nc bnc" id="L195" title="All 2 branches missed.">    } else if (isAllDay) {</span>
+<span class="nc" id="L196">      isAllDay = false;</span>
+    } else {
+<span class="nc" id="L198">      this.endDateTime = endDateTime;</span>
+    }
+<span class="nc" id="L200">  }</span>
+
+  @Override
+  public void setLocation(String location) {
+<span class="nc bnc" id="L204" title="All 2 branches missed.">    for (int i = 0; i &lt; Location.values().length; i++) {</span>
+<span class="nc" id="L205">      Location loc = Location.values()[i];</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">      if (loc.getStringRepresentation().equals(location)) {</span>
+<span class="nc" id="L207">        this.location = loc;</span>
+<span class="nc" id="L208">        return;</span>
+      } else {
+<span class="nc bnc" id="L210" title="All 2 branches missed.">        if (i == Location.values().length - 1) {</span>
+<span class="nc" id="L211">          throw new NoSuchElementException(&quot;Location must either be \&quot;physical\&quot; &quot; +</span>
+                  &quot;or \&quot;online\&quot;.&quot;);
+        }
+      }
+    }
+<span class="nc" id="L216">  }</span>
+
+  @Override
+  public void setStatus(String status) {
+<span class="nc bnc" id="L220" title="All 2 branches missed.">    for (int i = 0; i &lt; Status.values().length; i++) {</span>
+<span class="nc" id="L221">      Status stat = Status.values()[i];</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">      if (stat.getStringRepresentation().equals(status)) {</span>
+<span class="nc" id="L223">        this.status = stat;</span>
+<span class="nc" id="L224">        return;</span>
+      } else {
+<span class="nc bnc" id="L226" title="All 2 branches missed.">        if (i == Status.values().length - 1) {</span>
+<span class="nc" id="L227">          throw new NoSuchElementException(&quot;Status must either be \&quot;public\&quot; or &quot; +</span>
+                  &quot;\&quot;private\&quot;.&quot;);
+        }
+      }
+    }
+<span class="nc" id="L232">  }</span>
+
+  @Override
+  public String toString() {
+<span class="nc bnc" id="L236" title="All 2 branches missed.">    String locationFormat = (location != null)</span>
+<span class="nc" id="L237">            ? String.format(&quot;; %s&quot;, location.getStringRepresentation()) : &quot;&quot;;</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">    return (!isAllDay)</span>
+<span class="nc" id="L239">            ? String.format(</span>
+            &quot;\&quot;%s\&quot;, from %s %s to %s %s%s&quot;,
+            subject,
+<span class="nc" id="L242">            startDateTime.getDayOfWeek(),</span>
+            startDateTime,
+<span class="nc" id="L244">            endDateTime.getDayOfWeek(),</span>
+            endDateTime,
+            locationFormat
+<span class="nc" id="L247">    ) : String.format(</span>
+            &quot;\&quot;%s\&quot;, on %s %s%s&quot;,
+            subject,
+<span class="nc" id="L250">            startDateTime.getDayOfWeek(),</span>
+<span class="nc" id="L251">            startDateTime.toLocalDate(),</span>
+            locationFormat
+    );
+  }
+
+  @Override
+  public boolean equals(Object other) {
+<span class="nc bnc" id="L258" title="All 2 branches missed.">    if (this == other) {</span>
+<span class="nc" id="L259">      return true;</span>
+    } else {
+<span class="nc bnc" id="L261" title="All 2 branches missed.">      if (other instanceof CalEventImpl c) {</span>
+<span class="nc bnc" id="L262" title="All 4 branches missed.">        return subject.equals(c.subject)</span>
+                &amp;&amp; isAllDay == c.isAllDay
+<span class="nc bnc" id="L264" title="All 2 branches missed.">                &amp;&amp; startDateTime.equals(c.startDateTime)</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">                &amp;&amp; endDateTime.equals(c.endDateTime);</span>
+      } else {
+<span class="nc" id="L267">        return false;</span>
+      }
+    }
+  }
+
+  @Override
+  public int hashCode() {
+<span class="nc" id="L274">    return Objects.hash(subject, isAllDay, startDateTime, endDateTime);</span>
+  }
+
+  @Override
+  public int compareTo(CalEvent o) {
+<span class="pc bpc" id="L279" title="1 of 2 branches missed.">    if (o instanceof CalEventImpl c) {</span>
+<span class="fc bfc" id="L280" title="All 2 branches covered.">      if (!startDateTime.isEqual(c.startDateTime)) {</span>
+<span class="fc" id="L281">        return startDateTime.compareTo(c.startDateTime);</span>
+<span class="pc bpc" id="L282" title="1 of 2 branches missed.">      } else if (!endDateTime.isEqual(c.endDateTime)) {</span>
+<span class="nc" id="L283">        return endDateTime.compareTo(c.endDateTime);</span>
+<span class="pc bpc" id="L284" title="1 of 2 branches missed.">      } else if (!subject.equals(c.subject)) {</span>
+<span class="nc" id="L285">        return subject.compareTo(c.subject);</span>
+<span class="pc bpc" id="L286" title="1 of 4 branches missed.">      } else if (isAllDay &amp;&amp; !c.isAllDay) {</span>
+<span class="nc" id="L287">        return -1;</span>
+<span class="pc bpc" id="L288" title="1 of 4 branches missed.">      } else if (!isAllDay &amp;&amp; c.isAllDay) {</span>
+<span class="nc" id="L289">        return 1;</span>
+      } else {
+<span class="fc" id="L291">        return 0;</span>
+      }
+    } else {
+<span class="nc" id="L294">      throw new IllegalArgumentException(&quot;Cannot compare different subtypes of CalEvent.&quot;);</span>
+    }
+  }
+
+<span class="nc" id="L298">  public enum Location {</span>
+<span class="nc" id="L299">    PHYSICAL(&quot;physical&quot;),</span>
+<span class="nc" id="L300">    ONLINE(&quot;online&quot;);</span>
+
+    private final String stringRepresentation;
+
+<span class="nc" id="L304">    Location(String stringRepresentation) {</span>
+<span class="nc" id="L305">      this.stringRepresentation = stringRepresentation;</span>
+<span class="nc" id="L306">    }</span>
+
+    public String getStringRepresentation() {
+<span class="nc" id="L309">      return stringRepresentation;</span>
+    }
+  }
+
+<span class="fc" id="L313">  public enum Status {</span>
+<span class="fc" id="L314">    PUBLIC(&quot;public&quot;),</span>
+<span class="fc" id="L315">    PRIVATE(&quot;private&quot;);</span>
+
+    private final String stringRepresentation;
+
+<span class="fc" id="L319">    Status(String stringRepresentation) {</span>
+<span class="fc" id="L320">      this.stringRepresentation = stringRepresentation;</span>
+<span class="fc" id="L321">    }</span>
+
+    public String getStringRepresentation() {
+<span class="nc" id="L324">      return stringRepresentation;</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

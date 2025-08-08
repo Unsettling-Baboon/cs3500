@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RobustCalEvent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">hw6</a> &gt; <a href="index.source.html" class="el_package">model.events</a> &gt; <span class="el_source">RobustCalEvent.java</span></div><h1>RobustCalEvent.java</h1><pre class="source lang-java linenums">package model.events;
+
+import java.util.Collection;
+import java.util.TreeSet;
+
+/**
+ * An interface representing a robust calendar event that now has both editable
+ * and queriable properties, with the new addition of being able to be added
+ * to a series of calendar events.
+ */
+public interface RobustCalEvent extends EditableCalEvent, QueriableCalEvent {
+  /**
+   * A class representing a series of calendar events, useful for keeping track
+   * of a series of recurring events.
+   */
+  class Series {
+    private final TreeSet&lt;RobustCalEvent&gt; events;
+
+    /**
+     * Construct a new, empty series of calendar events.
+     */
+<span class="nc" id="L22">    public Series() {</span>
+<span class="nc" id="L23">      events = new TreeSet&lt;&gt;();</span>
+<span class="nc" id="L24">    }</span>
+
+    /**
+     * Retrieve all the events in this series.
+     *
+     * @return the set of all events contained in this series.
+     */
+    public TreeSet&lt;RobustCalEvent&gt; getEvents() {
+<span class="nc" id="L32">      return events;</span>
+    }
+
+    /**
+     * Add an event to the series instance variable of this calendar event
+     * series.
+     *
+     * @param event the event to be added.
+     */
+    public void add(RobustCalEvent event) {
+<span class="nc" id="L42">      events.add(event);</span>
+<span class="nc" id="L43">    }</span>
+
+    /**
+     * Add all events from a collection of events to the series instance
+     * variable of this calendar event series.
+     *
+     * @param eventCollection the source collection of all the events.
+     */
+    public void addAll(Collection&lt;? extends RobustCalEvent&gt; eventCollection) {
+<span class="nc" id="L52">      events.addAll(eventCollection);</span>
+<span class="nc" id="L53">    }</span>
+
+    /**
+     * Remove an event from the series instance variable of this calendar event
+     * series.
+     *
+     * @param event the event to be removed.
+     */
+    public void remove(RobustCalEvent event) {
+<span class="nc" id="L62">      events.remove(event);</span>
+<span class="nc" id="L63">    }</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

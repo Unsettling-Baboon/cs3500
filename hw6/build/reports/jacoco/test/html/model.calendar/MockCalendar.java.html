@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MockCalendar.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">hw6</a> &gt; <a href="index.source.html" class="el_package">model.calendar</a> &gt; <span class="el_source">MockCalendar.java</span></div><h1>MockCalendar.java</h1><pre class="source lang-java linenums">package model.calendar;
+
+import java.util.List;
+import java.util.Set;
+
+import model.events.RobustCalEvent;
+
+public class MockCalendar implements RobustCalendar {
+  private final StringBuilder log;
+
+<span class="nc" id="L11">  public MockCalendar() {</span>
+<span class="nc" id="L12">    log = new StringBuilder();</span>
+<span class="nc" id="L13">  }</span>
+
+  public String getLog() {
+<span class="nc" id="L16">    return log.toString();</span>
+  }
+
+  @Override
+  public void createSingleNormalEvent(String eventSubject, String fromDateStringTtimeString, String toDateStringTtimeString) {
+<span class="nc" id="L21">    log.append(&quot;createSingleNormalEvent(&quot;)</span>
+<span class="nc" id="L22">            .append(eventSubject).append(&quot;, &quot;)</span>
+<span class="nc" id="L23">            .append(fromDateStringTtimeString).append(&quot;, &quot;)</span>
+<span class="nc" id="L24">            .append(toDateStringTtimeString).append(&quot;)\n&quot;);</span>
+<span class="nc" id="L25">  }</span>
+
+  @Override
+  public void createRecurringNormalEventsNTimes(String eventSubject, String fromDateStringTtimeString, String toDateStringTtimeString, String repeatWeekdays, int N) {
+<span class="nc" id="L29">    log.append(&quot;createRecurringNormalEventsNTimes(&quot;)</span>
+<span class="nc" id="L30">            .append(eventSubject).append(&quot;, &quot;)</span>
+<span class="nc" id="L31">            .append(fromDateStringTtimeString).append(&quot;, &quot;)</span>
+<span class="nc" id="L32">            .append(toDateStringTtimeString).append(&quot;, &quot;)</span>
+<span class="nc" id="L33">            .append(repeatWeekdays).append(&quot;, &quot;)</span>
+<span class="nc" id="L34">            .append(N).append(&quot;)\n&quot;);</span>
+<span class="nc" id="L35">  }</span>
+
+  @Override
+  public void createRecurringNormalEventsUntilDate(String eventSubject, String fromDateStringTtimeString, String toDateStringTtimeString, String repeatWeekdays, String untilDateString) {
+<span class="nc" id="L39">    log.append(&quot;createRecurringNormalEventsUntilDate(&quot;)</span>
+<span class="nc" id="L40">            .append(eventSubject).append(&quot;, &quot;)</span>
+<span class="nc" id="L41">            .append(fromDateStringTtimeString).append(&quot;, &quot;)</span>
+<span class="nc" id="L42">            .append(toDateStringTtimeString).append(&quot;, &quot;)</span>
+<span class="nc" id="L43">            .append(repeatWeekdays).append(&quot;, &quot;)</span>
+<span class="nc" id="L44">            .append(untilDateString).append(&quot;)\n&quot;);</span>
+<span class="nc" id="L45">  }</span>
+
+  @Override
+  public void createSingleAllDayEvent(String eventSubject, String dateString) {
+<span class="nc" id="L49">    log.append(&quot;createSingleAllDayEvent(&quot;)</span>
+<span class="nc" id="L50">            .append(eventSubject).append(&quot;, &quot;)</span>
+<span class="nc" id="L51">            .append(dateString).append(&quot;)\n&quot;);</span>
+<span class="nc" id="L52">  }</span>
+
+  @Override
+  public void createRecurringAllDayEventsNTimes(String eventSubject, String dateString, String repeatWeekdays, int N) {
+<span class="nc" id="L56">    log.append(&quot;createRecurringAllDayEventsNTimes(&quot;)</span>
+<span class="nc" id="L57">            .append(eventSubject).append(&quot;, &quot;)</span>
+<span class="nc" id="L58">            .append(dateString).append(&quot;, &quot;)</span>
+<span class="nc" id="L59">            .append(repeatWeekdays).append(&quot;, &quot;)</span>
+<span class="nc" id="L60">            .append(N).append(&quot;)\n&quot;);</span>
+<span class="nc" id="L61">  }</span>
+
+  @Override
+  public void createRecurringAllDayEventsUntilDate(String eventSubject, String dateString, String repeatWeekdays, String untilDateString) {
+<span class="nc" id="L65">    log.append(&quot;createRecurringAllDayEventsUntilDate(&quot;)</span>
+<span class="nc" id="L66">            .append(eventSubject).append(&quot;, &quot;)</span>
+<span class="nc" id="L67">            .append(dateString).append(&quot;, &quot;)</span>
+<span class="nc" id="L68">            .append(repeatWeekdays).append(&quot;, &quot;)</span>
+<span class="nc" id="L69">            .append(untilDateString).append(&quot;)\n&quot;);</span>
+<span class="nc" id="L70">  }</span>
+
+  @Override
+  public void editSingleEvent(String property, String eventSubject, String fromDateStringTtimeString, String toDateStringTtimeString, String newPropertyVal) {
+<span class="nc" id="L74">    log.append(&quot;editSingleEvent(&quot;)</span>
+<span class="nc" id="L75">            .append(property).append(&quot;, &quot;)</span>
+<span class="nc" id="L76">            .append(eventSubject).append(&quot;, &quot;)</span>
+<span class="nc" id="L77">            .append(fromDateStringTtimeString).append(&quot;, &quot;)</span>
+<span class="nc" id="L78">            .append(toDateStringTtimeString).append(&quot;, &quot;)</span>
+<span class="nc" id="L79">            .append(newPropertyVal).append(&quot;)\n&quot;);</span>
+<span class="nc" id="L80">  }</span>
+
+  @Override
+  public void editEventAndMaybeOnward(String property, String eventSubject, String fromDateStringTtimeString, String newPropertyVal) {
+<span class="nc" id="L84">    log.append(&quot;editEventAndMaybeOnward(&quot;)</span>
+<span class="nc" id="L85">            .append(property).append(&quot;, &quot;)</span>
+<span class="nc" id="L86">            .append(eventSubject).append(&quot;, &quot;)</span>
+<span class="nc" id="L87">            .append(fromDateStringTtimeString).append(&quot;, &quot;)</span>
+<span class="nc" id="L88">            .append(newPropertyVal).append(&quot;)\n&quot;);</span>
+<span class="nc" id="L89">  }</span>
+
+  @Override
+  public void editEventAndMaybeAll(String property, String eventSubject, String fromDateStringTtimeString, String newPropertyVal) {
+<span class="nc" id="L93">    log.append(&quot;editEventAndMaybeAll(&quot;)</span>
+<span class="nc" id="L94">            .append(property).append(&quot;, &quot;)</span>
+<span class="nc" id="L95">            .append(eventSubject).append(&quot;, &quot;)</span>
+<span class="nc" id="L96">            .append(fromDateStringTtimeString).append(&quot;, &quot;)</span>
+<span class="nc" id="L97">            .append(newPropertyVal).append(&quot;)\n&quot;);</span>
+<span class="nc" id="L98">  }</span>
+
+  @Override
+  public String getName() {
+<span class="nc" id="L102">    return &quot;&quot;;</span>
+  }
+
+  @Override
+  public String getZone() {
+<span class="nc" id="L107">    return null;</span>
+  }
+
+  @Override
+  public Set&lt;RobustCalEvent&gt; getEvents() {
+<span class="nc" id="L112">    log.append(&quot;getEvents()\n&quot;);</span>
+    // Return an empty, unmodifiable set for testing purposes
+<span class="nc" id="L114">    return Set.of();</span>
+  }
+
+  @Override
+  public List&lt;RobustCalEvent&gt; printAllEventsOnDate(String dateString) {
+<span class="nc" id="L119">    log.append(&quot;printAllEventsOnDate(&quot;).append(dateString).append(&quot;)\n&quot;);</span>
+<span class="nc" id="L120">    return List.of(); // Return empty list for this mock</span>
+  }
+
+  @Override
+  public List&lt;RobustCalEvent&gt; printAllEventsBetweenDates(String fromDateStringTtimeString, String toDateStringTtimeString) {
+<span class="nc" id="L125">    log.append(&quot;printAllEventsBetweenDates(&quot;)</span>
+<span class="nc" id="L126">            .append(fromDateStringTtimeString).append(&quot;, &quot;)</span>
+<span class="nc" id="L127">            .append(toDateStringTtimeString).append(&quot;)\n&quot;);</span>
+<span class="nc" id="L128">    return List.of(); // Return empty list for this mock</span>
+  }
+
+  @Override
+  public String showStatusOnDateAtTime(String dateStringTtimeString) {
+<span class="nc" id="L133">    log.append(&quot;showStatusOnDateAtTime(&quot;).append(dateStringTtimeString).append(&quot;)\n&quot;);</span>
+<span class="nc" id="L134">    return &quot;available&quot;; // Return a predictable status for the mock</span>
+  }
+
+  @Override
+  public void setName(String name) {
+
+<span class="nc" id="L140">  }</span>
+
+  @Override
+  public void setZone(String zone) {
+
+<span class="nc" id="L145">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

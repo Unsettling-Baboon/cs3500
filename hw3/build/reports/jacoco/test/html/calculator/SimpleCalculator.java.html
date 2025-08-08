@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SimpleCalculator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">hw3</a> &gt; <a href="index.source.html" class="el_package">calculator</a> &gt; <span class="el_source">SimpleCalculator.java</span></div><h1>SimpleCalculator.java</h1><pre class="source lang-java linenums">package calculator;
+
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+
+/**
+ * This class implements an immutable, simple {@link Calculator} object. It has
+ * a field {@code currentlyEnteredSymbols} that stores the history of entered
+ * inputs, and has the ability to derive the result from that history in
+ * {@code getResult()}, and the ability to pass the history on to future
+ * instances, with a provided argument appended on, in {@code input()}.
+ */
+public class SimpleCalculator extends AbstractCalculator {
+  /**
+   * Construct a new {@link SimpleCalculator} object with an empty
+   * {@code currentResult} String.
+   */
+  public SimpleCalculator() {
+<span class="nc" id="L20">    super();</span>
+<span class="nc" id="L21">  }</span>
+
+  // used to copy over the current object to a new one in input(), maintaining immutability
+  private SimpleCalculator(String lastResult) {
+<span class="nc" id="L25">    super(lastResult);</span>
+<span class="nc" id="L26">  }</span>
+
+  @Override
+  protected AbstractCalculator of() {
+<span class="nc" id="L30">    return of(&quot;&quot;);</span>
+  }
+
+  @Override
+  protected AbstractCalculator of(String lastResult) {
+<span class="nc" id="L35">    return new SimpleCalculator(lastResult);</span>
+  }
+
+  @Override
+  protected AbstractCalculator handleUnsupportedInputs(char argument, char lastChar) {
+    // check conditions specific to when nothing has been inputted yet (an empty result)
+<span class="nc bnc" id="L41" title="All 2 branches missed.">    if (currentlyEnteredSymbols.isEmpty()) {</span>
+      // cannot start with operator
+<span class="nc bnc" id="L43" title="All 2 branches missed.">      if (OPERATORS.contains(argument)) {</span>
+<span class="nc" id="L44">        throw new IllegalArgumentException(&quot;Cannot start an expression with an operator.&quot;);</span>
+      }
+    } else {
+      // if both argument and last entered character are operators, entry should be rejected
+<span class="nc bnc" id="L48" title="All 4 branches missed.">      if (OPERATORS.contains(argument) &amp;&amp; OPERATORS.contains(lastChar)) {</span>
+<span class="nc" id="L49">        throw new IllegalArgumentException(&quot;Cannot enter consecutive operators.&quot;);</span>
+      }
+<span class="nc bnc" id="L51" title="All 4 branches missed.">      if (OPERATORS.contains(lastChar) &amp;&amp; argument == EQUALS_CHARACTER) {</span>
+<span class="nc" id="L52">        throw new IllegalArgumentException(&quot;Cannot enter equals sign after operator.&quot;);</span>
+      }
+    }
+    // return null to account for abstract class implementation of input()
+<span class="nc" id="L56">    return null;</span>
+  }
+
+  @Override
+  public String getResult() throws IllegalArgumentException {
+    // create a copy of the currentlyEnteredSymbols field
+<span class="nc" id="L62">    String currentlyEnteredSymbols = new StringBuilder(this.currentlyEnteredSymbols).toString();</span>
+    // if the result string is literally empty, return it
+<span class="nc bnc" id="L64" title="All 2 branches missed.">    if (currentlyEnteredSymbols.isEmpty()) {</span>
+<span class="nc" id="L65">      return currentlyEnteredSymbols;</span>
+    }
+    // if there's no numerical argument or the last character is an operator, return current
+<span class="nc" id="L68">    char lastCharacter = getLastCharacterInResult();</span>
+<span class="nc" id="L69">    char[] symbolsAsArray = currentlyEnteredSymbols.toCharArray();</span>
+<span class="nc" id="L70">    int lastCharacterIndex = currentlyEnteredSymbols.length() - 1;</span>
+    // now, proceed to truncate the String if there are things after the last equals sign
+<span class="nc" id="L72">    Result helperResult = handleSymbolsAfterEqualsSigns(</span>
+            lastCharacterIndex, symbolsAsArray,
+            lastCharacter, currentlyEnteredSymbols
+    );
+    // reassign the calculated values
+<span class="nc" id="L77">    int equalsCount = helperResult.equalsCount();</span>
+<span class="nc" id="L78">    String ending = helperResult.ending();</span>
+<span class="nc" id="L79">    currentlyEnteredSymbols = helperResult.currentlyEnteredSymbols();</span>
+    // ensure that calculations are only carried out when there's an ending equals sign
+<span class="nc bnc" id="L81" title="All 2 branches missed.">    if (lastCharacter == EQUALS_CHARACTER</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">            || currentlyEnteredSymbols.contains(String.valueOf(EQUALS_CHARACTER))</span>
+    ) {
+      /* if there are no operators, then print the currently entered symbols, now guaranteed
+         to only be numbers; works with &gt;0 equals sign case with only one number case too */
+<span class="nc" id="L86">      String potentialResult = handleManyEqualsSignsAfterOneNumber(</span>
+              lastCharacterIndex, symbolsAsArray
+      );
+      // only null in the case that there are indeed operators
+<span class="nc bnc" id="L90" title="All 2 branches missed.">      if (potentialResult != null) {</span>
+<span class="nc" id="L91">        currentlyEnteredSymbols = potentialResult;</span>
+<span class="nc" id="L92">        return currentlyEnteredSymbols;</span>
+      }
+      // if there are indeed operators, split the symbols into numbers and operators
+<span class="nc" id="L95">      List&lt;String&gt; numericalArgumentsAsList = getNumericalArgumentsAsList(currentlyEnteredSymbols);</span>
+      // however, if there's an operator after the equals sign, remove it, then add it at end
+<span class="nc" id="L97">      List&lt;String&gt; operatorArgumentsAsList = getOperatorArgumentsAsList(currentlyEnteredSymbols);</span>
+      // define the result to be calculated as long—just in case it is longer than 32 bits
+      long currentlyCalculatedResult;
+      // initialize the result to be calculated as the first number from those entered
+<span class="nc" id="L101">      currentlyCalculatedResult = Integer.parseInt(numericalArgumentsAsList.getFirst());</span>
+      // iterate over the numbers in the symbols and perform actions based on the operators
+<span class="nc" id="L103">      currentlyCalculatedResult = performCalculations(</span>
+              operatorArgumentsAsList, numericalArgumentsAsList, currentlyCalculatedResult
+      );
+      // ensure that the result can fit in an int
+<span class="nc" id="L107">      return overflowSafeResult(currentlyCalculatedResult, equalsCount, lastCharacter, ending);</span>
+    }
+    /* case where only numbers are in the result string (already covered, statement is here
+       only just to promise java that something is always returned) */
+<span class="nc" id="L111">    return currentlyEnteredSymbols;</span>
+  }
+
+  // getResult() helper method 1
+  private Result handleSymbolsAfterEqualsSigns(
+          int lastCharacterIndex, char[] symbolsAsArray,
+          char lastCharacter, String currentlyEnteredSymbols
+  ) {
+<span class="nc" id="L119">    String ending = &quot;&quot;;</span>
+<span class="nc" id="L120">    StringBuilder endingBuilder = new StringBuilder();</span>
+<span class="nc" id="L121">    int equalsCount = 0;</span>
+    // calculate amount of equals signs amongst these symbols
+<span class="nc bnc" id="L123" title="All 2 branches missed.">    for (int i = 0; i &lt;= lastCharacterIndex; i++) {</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">      if (symbolsAsArray[i] == EQUALS_CHARACTER) {</span>
+<span class="nc" id="L125">        equalsCount++;</span>
+      }
+    }
+    // if there are indeed more than one equals sign...
+<span class="nc bnc" id="L129" title="All 4 branches missed.">    if (equalsCount &gt; 0 &amp;&amp; lastCharacter != EQUALS_CHARACTER) {</span>
+      // calculate everything before the last equals sign...
+<span class="nc" id="L131">      StringBuilder result = new StringBuilder();</span>
+<span class="nc" id="L132">      int lastEqualsIndex = currentlyEnteredSymbols.lastIndexOf(EQUALS_CHARACTER);</span>
+      // this ensures JIT calculation of all inputs BEFORE the last equals sign...
+<span class="nc bnc" id="L134" title="All 2 branches missed.">      for (int j = 0; j &lt;= lastEqualsIndex; j++) {</span>
+<span class="nc" id="L135">        result.append(symbolsAsArray[j]);</span>
+      }
+      // and maintains immutability of both currentlyEnteredSymbols field AND this object
+<span class="nc bnc" id="L138" title="All 2 branches missed.">      for (int k = lastEqualsIndex + 1; k &lt;= lastCharacterIndex; k++) {</span>
+<span class="nc" id="L139">        endingBuilder.append(symbolsAsArray[k]);</span>
+      }
+      // store calculated values in relevant objects
+<span class="nc" id="L142">      currentlyEnteredSymbols = result.toString();</span>
+<span class="nc" id="L143">      ending = endingBuilder.toString();</span>
+    }
+<span class="nc" id="L145">    return new Result(currentlyEnteredSymbols, ending, equalsCount);</span>
+  }
+
+  // getResult() helper method 2
+  private String handleManyEqualsSignsAfterOneNumber(
+          int lastCharacterIndex, char[] symbolsAsArray
+  ) {
+<span class="nc bnc" id="L152" title="All 2 branches missed.">    for (int l = 0; l &lt;= lastCharacterIndex; l++) {</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">      if (OPERATORS.contains(symbolsAsArray[l])) {</span>
+<span class="nc" id="L154">        break;</span>
+      } else {
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if (l == lastCharacterIndex) {</span>
+          // now guaranteed that everything in the input is only numbers...
+<span class="nc" id="L158">          StringBuilder result = new StringBuilder();</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">          for (char symbol : symbolsAsArray) {</span>
+            // so now, remove all the equals signs, if there's multiple
+<span class="nc bnc" id="L161" title="All 2 branches missed.">            if (symbol != EQUALS_CHARACTER) {</span>
+<span class="nc" id="L162">              result.append(symbol);</span>
+            }
+          }
+<span class="nc" id="L165">          return result.toString();</span>
+        }
+      }
+    }
+<span class="nc" id="L169">    return null;</span>
+  }
+
+  // getResult() helper method 3
+  private List&lt;String&gt; getNumericalArgumentsAsList(String currentlyEnteredSymbols) {
+    // if there are indeed operators, split the symbols into numbers and operators
+<span class="nc" id="L175">    String[] numericalArgumentsInitial = currentlyEnteredSymbols.split(&quot;[-+*=]+&quot;);</span>
+    // ensure there are no empty Strings from split() method adjacent symbol behavior
+<span class="nc" id="L177">    List&lt;String&gt; numericalArgumentsAsList = new LinkedList&lt;&gt;();</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">    for (String numericalArgument : numericalArgumentsInitial) {</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">      if (!numericalArgument.isEmpty()) {</span>
+<span class="nc" id="L180">        numericalArgumentsAsList.add(numericalArgument);</span>
+      }
+    }
+<span class="nc" id="L183">    return numericalArgumentsAsList;</span>
+  }
+
+  // getResult() helper method 4
+  private List&lt;String&gt; getOperatorArgumentsAsList(String currentlyEnteredSymbols) {
+    // however, if there's an operator after the equals sign, remove it, then add it at end
+<span class="nc" id="L189">    String[] operatorArgumentsInitial = Arrays</span>
+<span class="nc" id="L190">            .stream(currentlyEnteredSymbols.split(&quot;[0123456789=]+&quot;))</span>
+<span class="nc" id="L191">            .toList()</span>
+<span class="nc" id="L192">            .subList(1, currentlyEnteredSymbols.split(&quot;[0123456789=]+&quot;).length)</span>
+<span class="nc" id="L193">            .toArray(String[]::new);</span>
+    // ensure there are no empty Strings from split() method adjacent symbol behavior
+<span class="nc" id="L195">    return placeArguments(operatorArgumentsInitial);</span>
+  }
+
+  // getOperatorArgumentsAsList() and getNumericalArgumentsAsList() common code refactored
+  private List&lt;String&gt; placeArguments(String[] initialArguments) {
+<span class="nc" id="L200">    List&lt;String&gt; argumentsAsList = new LinkedList&lt;&gt;();</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">    for (String initialArgument : initialArguments) {</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">      if (!initialArgument.isEmpty()) {</span>
+<span class="nc" id="L203">        argumentsAsList.add(initialArgument);</span>
+      }
+    }
+<span class="nc" id="L206">    return argumentsAsList;</span>
+  }
+
+  // getResult() helper method 5
+  private long performCalculations(
+          List&lt;String&gt; operatorArgumentsAsList,
+          List&lt;String&gt; numericalArgumentsAsList,
+          long currentlyCalculatedResult
+  ) {
+<span class="nc bnc" id="L215" title="All 2 branches missed.">    for (int m = 0; m &lt; operatorArgumentsAsList.size(); m++) {</span>
+      // define the relevant variables
+<span class="nc" id="L217">      String currentOperator = operatorArgumentsAsList.get(m);</span>
+      /* numerical arguments' size now same as operator arguments size because currently
+         calculated result takes care of the first number, and the ending equals sign is
+         taken care of during splitting */
+<span class="nc" id="L221">      String nextOperand = numericalArgumentsAsList.get(m + 1);</span>
+<span class="nc" id="L222">      long nextOperandAsInt = Integer.parseInt(nextOperand);</span>
+      // actually perform the operations, referring to the relevant symbols
+<span class="nc bnc" id="L224" title="All 4 branches missed.">      switch (currentOperator) {</span>
+<span class="nc" id="L225">        case &quot;+&quot; -&gt; currentlyCalculatedResult += nextOperandAsInt;</span>
+<span class="nc" id="L226">        case &quot;-&quot; -&gt; currentlyCalculatedResult -= nextOperandAsInt;</span>
+<span class="nc" id="L227">        case &quot;*&quot; -&gt; currentlyCalculatedResult *= nextOperandAsInt;</span>
+<span class="nc" id="L228">        default -&gt; System.out.println(&quot;Impossible!&quot;);</span>
+      }
+    }
+<span class="nc" id="L231">    return currentlyCalculatedResult;</span>
+  }
+
+  // getResult() helper method 6
+  private String overflowSafeResult(
+          long currentlyCalculatedResult, int equalsCount,
+          char lastCharacter, String ending
+  ) {
+<span class="nc bnc" id="L239" title="All 2 branches missed.">    if (Math.abs(currentlyCalculatedResult) &lt;= Integer.MAX_VALUE) {</span>
+      // append ending characters again if there were some after the last equals sign
+<span class="nc bnc" id="L241" title="All 4 branches missed.">      if (equalsCount &gt; 0 &amp;&amp; lastCharacter != '=') {</span>
+<span class="nc" id="L242">        return String.format(&quot;%d%s&quot;, currentlyCalculatedResult, ending);</span>
+      } else {
+        // otherwise, print the result
+<span class="nc" id="L245">        return String.format(&quot;%d&quot;, currentlyCalculatedResult);</span>
+      }
+    } else {
+      // same as previous branch's first sub-branch
+<span class="nc bnc" id="L249" title="All 4 branches missed.">      if (equalsCount &gt; 0 &amp;&amp; lastCharacter != '=') {</span>
+<span class="nc" id="L250">        return String.format(&quot;%d%s&quot;, 0, ending);</span>
+      } else {
+        // same as previous branch's second sub-branch
+<span class="nc" id="L253">        return String.format(&quot;%d&quot;, 0);</span>
+      }
+    }
+  }
+
+  // getResult() helper record class
+<span class="nc" id="L259">  private record Result(String currentlyEnteredSymbols, String ending, int equalsCount) { }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
